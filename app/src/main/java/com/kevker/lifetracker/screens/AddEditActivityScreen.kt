@@ -15,7 +15,6 @@ import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.viewmodels.ActivityViewModel
 import com.kevker.lifetracker.widget.SimpleTopAppBar
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @Composable
