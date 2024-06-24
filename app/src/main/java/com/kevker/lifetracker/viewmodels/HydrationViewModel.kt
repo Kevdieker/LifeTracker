@@ -14,8 +14,8 @@ class HydrationViewModel : ViewModel() {
     private val _dailyGoal = MutableStateFlow(2000) // Daily goal in milliliters
     val dailyGoal: StateFlow<Int> get() = _dailyGoal
 
-    val totalWaterIntake: Int
-        get() = glasses.value.sumOf { it.ml }
+    private val _totalWaterIntake = MutableStateFlow(0)
+    val totalWaterIntake: StateFlow<Int> get() = _totalWaterIntake
 
     fun addGlass(glass: Glass) {
         viewModelScope.launch {
@@ -26,6 +26,18 @@ class HydrationViewModel : ViewModel() {
     fun removeGlass(glass: Glass) {
         viewModelScope.launch {
             _glasses.value = _glasses.value - glass
+        }
+    }
+
+    fun addWater(glass: Glass) {
+        viewModelScope.launch {
+            _totalWaterIntake.value += glass.ml
+        }
+    }
+
+    fun removeWater(glass: Glass) {
+        viewModelScope.launch {
+            _totalWaterIntake.value -= glass.ml
         }
     }
 

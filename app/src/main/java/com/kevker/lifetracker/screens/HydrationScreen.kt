@@ -25,14 +25,18 @@ fun HydrationScreen(navController: NavController) {
 
     val glasses by viewModel.glasses.collectAsState()
     val dailyGoal by viewModel.dailyGoal.collectAsState()
+    val totalWaterIntake by viewModel.totalWaterIntake.collectAsState()
 
-    val totalWaterIntake = glasses.sumOf { it.ml }
     val sliderPosition = totalWaterIntake / dailyGoal.toFloat()
     val percentage = (sliderPosition * 100).toInt()
 
     var showDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var selectedGlass by remember { mutableStateOf<Glass?>(null) }
+    var lastAddedGlass by remember { mutableStateOf<Glass?>(null) }
+
+    var isDraggingOverJug by remember { mutableStateOf(false) }
+    var draggedGlass by remember { mutableStateOf<Glass?>(null) }
 
     Scaffold(
         topBar = {
@@ -65,7 +69,26 @@ fun HydrationScreen(navController: NavController) {
 
             Waterjug(
                 sliderPosition = sliderPosition,
-                percentage = percentage
+                percentage = percentage,
+                isDraggingOver = isDraggingOverJug,
+                onDragStarted = { isDraggingOverJug = true },
+                onDragEnded = {
+                    isDraggingOverJug = false
+                    draggedGlass?.let {
+                        viewModel.addWater(it)
+                        lastAddedGlass = it
+                        draggedGlass = null
+                    }
+                },
+                onDrop = { glass ->
+                    draggedGlass = glass
+                },
+                onLongPress = {
+                    if (lastAddedGlass != null) {
+                        viewModel.removeWater(lastAddedGlass!!)
+                        lastAddedGlass = null
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -82,6 +105,9 @@ fun HydrationScreen(navController: NavController) {
                 onDeleteGlass = { glass ->
                     selectedGlass = glass
                     showDeleteDialog = true
+                },
+                onDrag = { glass ->
+                    draggedGlass = glass
                 }
             )
         }
@@ -105,6 +131,9 @@ fun HydrationScreen(navController: NavController) {
         }
     )
 }
+
+
+
 
 @Composable
 fun AddGlassDialog(showDialog: Boolean, onDismiss: () -> Unit, onAddGlass: (Int) -> Unit) {
@@ -142,7 +171,6 @@ fun AddGlassDialog(showDialog: Boolean, onDismiss: () -> Unit, onAddGlass: (Int)
         )
     }
 }
-
 @Composable
 fun DeleteGlassDialog(showDialog: Boolean, onDismiss: () -> Unit, onDelete: () -> Unit) {
     if (showDialog) {

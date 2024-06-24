@@ -13,11 +13,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import com.kevker.lifetracker.models.Glass
 
 @Composable
-fun GlassList(glasses: List<Glass>, onAddGlass: (Int) -> Unit, onDeleteGlass: (Glass) -> Unit) {
+fun GlassList(glasses: List<Glass>, onAddGlass: (Int) -> Unit, onDeleteGlass: (Glass) -> Unit, onDrag: (Glass) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -26,7 +27,11 @@ fun GlassList(glasses: List<Glass>, onAddGlass: (Int) -> Unit, onDeleteGlass: (G
     ) {
         LazyRow {
             items(glasses) { glass ->
-                GlassComposable(glass, onLongPress = onDeleteGlass)
+                GlassComposable(
+                    glass = glass,
+                    onLongPress = onDeleteGlass,
+                    onDrag = onDrag
+                )
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
@@ -36,3 +41,7 @@ fun GlassList(glasses: List<Glass>, onAddGlass: (Int) -> Unit, onDeleteGlass: (G
         }
     }
 }
+
+
+
+
