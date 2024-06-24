@@ -19,32 +19,33 @@ sealed class Screen(
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home
     )
-
-
     object Water : Screen(
         route = "water-screen",
         title = "Hydration",
         selectedIcon = Icons.Filled.Place,
         unselectedIcon = Icons.Outlined.Place
     )
-
     object Sleep : Screen(
         route = "sleep-screen",
         title = "Sleep",
         selectedIcon = Icons.Filled.Place,
         unselectedIcon = Icons.Outlined.Place
     )
-
     object AppUsage : Screen(
         route = "app-usage-screen",
         title = "AppUsage",
         selectedIcon = Icons.Filled.Place,
         unselectedIcon = Icons.Outlined.Place
     )
-
     object Activity : Screen(
         route = "activity-screen",
         title = "Activity",
+        selectedIcon = Icons.Filled.Place,
+        unselectedIcon = Icons.Outlined.Place
+    )
+    object AddEditActivity : Screen(
+        route = "add-edit-activity-screen",
+        title = "Add/Edit Activity",
         selectedIcon = Icons.Filled.Place,
         unselectedIcon = Icons.Outlined.Place
     )

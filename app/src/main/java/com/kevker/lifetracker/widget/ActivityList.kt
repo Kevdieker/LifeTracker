@@ -7,6 +7,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.kevker.lifetracker.models.Activity
+import com.kevker.lifetracker.navigation.Screen
 import com.kevker.lifetracker.viewmodels.ActivityViewModel
 
 @Composable
@@ -16,12 +17,13 @@ fun ActivityList(
     viewModel: ActivityViewModel,
     activities: List<Activity>,
 ) {
-    val coroutineScope = rememberCoroutineScope()
-
     LazyColumn(modifier = modifier) {
         items(activities) { activity ->
-            ActivityCard(activity = activity)
-
+            ActivityCard(
+                activity = activity,
+                onDeleteClick = { viewModel.deleteActivity(it) },
+                onEditClick = { navController.navigate("${Screen.AddEditActivity.route}/${activity.activityId}") }
+            )
         }
     }
 }

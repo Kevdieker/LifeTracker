@@ -14,17 +14,18 @@ interface ActivityDao {
 
     @Insert
     suspend fun add(activity: Activity)
+
     @Update
     suspend fun update(activity: Activity)
+
     @Delete
     suspend fun delete(activity: Activity)
 
     @Transaction
-    @Query("SELECT * FROM activity WHERE activity.activityId = :activityId")
-    fun getActivityByID(activityId: Long?): Flow<Activity>?
+    @Query("SELECT * FROM activity WHERE activityId = :activityId")
+    fun getActivityById(activityId: Long): Flow<Activity?>
 
     @Transaction
     @Query("SELECT * FROM activity")
     fun readAll(): Flow<List<Activity>>
-
 }

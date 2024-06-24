@@ -16,24 +16,35 @@ class ActivityViewModel(private val repository: Repository) : ViewModel() {
 
     init {
         viewModelScope.launch {
-            val activities = emptyList<Activity>()//getActivities()
-            activities.forEachIndexed { index, activity ->
-                val existingMovie = repository.getActivityById(activity.activityId)?.firstOrNull()
-                if (existingMovie == null) {
-                    val activityIndex = index + 1
-                    addActivity(activity)
-
-                }
-
-            }
             repository.getAllActivities().collect { activityList ->
                 _activities.value = activityList
             }
         }
     }
 
-    private suspend fun addActivity(activity: Activity) {
-        repository.add(activity)
+    fun deleteActivity(activity: Activity) {
+        viewModelScope.launch {
+            repository.delete(activity)
+        }
     }
 
+    fun addActivity(activity: Activity) {
+        viewModelScope.launch {
+            repository.add(activity)
+        }
+    }
+
+    fun updateActivity(activity: Activity) {
+        viewModelScope.launch {
+            repository.update(activity)
+        }
+    }
+
+    fun getActivityById(activityId: Long): StateFlow<Activity?> {
+        val activityFlow = MutableStateFlow<Activity?>(null)
+        viewModelScope.launch {
+            activityFlow.value = repository.getActivityById(activityId).firstOrNull()
+        }
+        return activityFlow.asStateFlow()
+    }
 }

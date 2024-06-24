@@ -1,6 +1,10 @@
 package com.kevker.lifetracker.screens
 
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,6 +16,7 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.data.Repository
 import com.kevker.lifetracker.factories.ViewModelFactory
+import com.kevker.lifetracker.navigation.Screen
 import com.kevker.lifetracker.viewmodels.ActivityViewModel
 import com.kevker.lifetracker.widget.ActivityList
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
@@ -35,7 +40,14 @@ fun ActivityScreen(
                 onNavigationIconClick = null
             )
         },
-        bottomBar = { SimpleBottomAppBar(navController) }
+        bottomBar = { SimpleBottomAppBar(navController) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navController.navigate(Screen.AddEditActivity.route)
+            }) {
+                Icon(Icons.Filled.Add, contentDescription = "Add")
+            }
+        }
     ) { innerPadding ->
         ActivityList(
             modifier = Modifier.padding(innerPadding),
@@ -45,3 +57,4 @@ fun ActivityScreen(
         )
     }
 }
+
