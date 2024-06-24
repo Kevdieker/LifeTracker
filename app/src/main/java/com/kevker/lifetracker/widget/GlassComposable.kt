@@ -35,7 +35,7 @@ fun GlassComposable(glass: Glass, onLongPress: (Glass) -> Unit) {
             }
     ) {
         Text(
-            text = "${glass.ml} ml",
+            text = "${glass.amount} ml",
             color = Color.Blue,
             style = MaterialTheme.typography.bodyLarge
         )

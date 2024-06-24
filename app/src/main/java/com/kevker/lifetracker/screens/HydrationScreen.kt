@@ -7,13 +7,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.kevker.lifetracker.data.LTDatabase
+import com.kevker.lifetracker.data.ActivityRepository
+import com.kevker.lifetracker.data.GlassRepository
+import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.models.Glass
+
 import com.kevker.lifetracker.viewmodels.HydrationViewModel
-import com.kevker.lifetracker.widget.GlassComposable
 import com.kevker.lifetracker.widget.GlassList
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -21,12 +26,15 @@ import com.kevker.lifetracker.widget.Waterjug
 
 @Composable
 fun HydrationScreen(navController: NavController) {
-    val viewModel: HydrationViewModel = viewModel()
+    val db = LTDatabase.getDatabase(LocalContext.current)
+    val glassRepository = GlassRepository.getInstance(db.glassDao())
+    val factory = ViewModelFactory(glassRepository = glassRepository)
+    val viewModel: HydrationViewModel = viewModel(factory = factory)
 
     val glasses by viewModel.glasses.collectAsState()
     val dailyGoal by viewModel.dailyGoal.collectAsState()
 
-    val totalWaterIntake = glasses.sumOf { it.ml }
+    val totalWaterIntake = glasses.sumOf { it.amount }
     val sliderPosition = totalWaterIntake / dailyGoal.toFloat()
     val percentage = (sliderPosition * 100).toInt()
 
@@ -49,7 +57,7 @@ fun HydrationScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Center the content
+            verticalArrangement = Arrangement.Center
         ) {
             Row(
                 modifier = Modifier
@@ -76,7 +84,7 @@ fun HydrationScreen(navController: NavController) {
                     if (size == -1) {
                         showDialog = true
                     } else {
-                        viewModel.addGlass(Glass(size))
+                        viewModel.addGlass(size)
                     }
                 },
                 onDeleteGlass = { glass ->
@@ -91,7 +99,7 @@ fun HydrationScreen(navController: NavController) {
         showDialog = showDialog,
         onDismiss = { showDialog = false },
         onAddGlass = { size ->
-            viewModel.addGlass(Glass(size))
+            viewModel.addGlass(size)
             showDialog = false
         }
     )
@@ -105,6 +113,9 @@ fun HydrationScreen(navController: NavController) {
         }
     )
 }
+
+
+
 
 @Composable
 fun AddGlassDialog(showDialog: Boolean, onDismiss: () -> Unit, onAddGlass: (Int) -> Unit) {

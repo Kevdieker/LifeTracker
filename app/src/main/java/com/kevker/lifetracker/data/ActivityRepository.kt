@@ -3,7 +3,7 @@ package com.kevker.lifetracker.data
 import com.kevker.lifetracker.models.Activity
 import kotlinx.coroutines.flow.Flow
 
-class Repository(private val activityDao: ActivityDao) {
+class ActivityRepository(private val activityDao: ActivityDao) {
     suspend fun add(activity: Activity) = activityDao.add(activity)
     suspend fun delete(activity: Activity) = activityDao.delete(activity)
     suspend fun update(activity: Activity) = activityDao.update(activity)
@@ -11,13 +11,12 @@ class Repository(private val activityDao: ActivityDao) {
     fun getAllActivities(): Flow<List<Activity>> = activityDao.readAll()
 
     companion object {
-
         @Volatile
-        private var instance: Repository? = null
+        private var instance: ActivityRepository? = null
 
-        fun getInstance(dao: ActivityDao) =
+        fun getInstance(activityDao: ActivityDao) =
             instance ?: synchronized(this) {
-                instance ?: Repository(dao).also { instance = it }
+                instance ?: ActivityRepository(activityDao).also { instance = it }
             }
     }
 }

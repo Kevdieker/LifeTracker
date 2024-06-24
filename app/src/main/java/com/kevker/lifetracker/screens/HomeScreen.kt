@@ -9,8 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.factories.ViewModelFactory
-import com.kevker.lifetracker.data.Repository
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
 

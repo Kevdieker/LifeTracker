@@ -1,6 +1,5 @@
 package com.kevker.lifetracker.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.data.Repository
+import com.kevker.lifetracker.data.ActivityRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.viewmodels.ActivityViewModel
@@ -24,8 +23,8 @@ fun AddEditActivityScreen(
 ) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(context)
-    val repository = Repository(activityDao = db.activityDao())
-    val factory = ViewModelFactory(repository = repository)
+    val activityRepository = ActivityRepository(activityDao = db.activityDao())
+    val factory = ViewModelFactory(activityRepository = activityRepository)
     val viewModel: ActivityViewModel = viewModel(factory = factory)
 
     val coroutineScope = rememberCoroutineScope()
