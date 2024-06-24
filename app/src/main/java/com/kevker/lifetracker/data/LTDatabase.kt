@@ -1,16 +1,16 @@
 package com.kevker.lifetracker.data
 
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import android.content.Context
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.models.Glass
 import com.kevker.lifetracker.models.SleepEntity
 
 @Database(
     entities = [Activity::class, Glass::class, SleepEntity::class],
-    version = 3,
+    version = 2,
     exportSchema = false
 )
 abstract class LTDatabase : RoomDatabase() {
