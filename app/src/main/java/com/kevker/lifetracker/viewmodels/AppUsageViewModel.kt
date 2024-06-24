@@ -4,6 +4,8 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
+import java.util.TimeZone
+import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.provider.Settings
 import android.util.Log
@@ -14,10 +16,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
-class AppUsageViewModel(context: Context) : ViewModel() {
+class AppUsageViewModel(private val context: Context) : ViewModel() {
 
     private val _usageTime = MutableStateFlow(0L)
     val usageTime: StateFlow<Long> = _usageTime
+
+    private val _totalScreenTime = MutableStateFlow(0L)
+    val totalScreenTime: StateFlow<Long> = _totalScreenTime
 
     private val _topAppIcon = MutableStateFlow<Drawable?>(null)
     val topAppIcon: StateFlow<Drawable?> = _topAppIcon
@@ -25,14 +30,27 @@ class AppUsageViewModel(context: Context) : ViewModel() {
     private val _topAppName = MutableStateFlow("")
     val topAppName: StateFlow<String> = _topAppName
 
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences("AppUsagePrefs", Context.MODE_PRIVATE)
+
+    private val _screenTimeGoal = MutableStateFlow(
+        sharedPreferences.getLong("screenTimeGoal", 2 * 60 * 60 * 1000L) // Default 2 hours
+    )
+    val screenTimeGoal: StateFlow<Long> = _screenTimeGoal
+
+    private val _trackingStartTime = MutableStateFlow(
+        sharedPreferences.getLong("trackingStartTime", getDefaultTrackingStartTime())
+    )
+    val trackingStartTime: StateFlow<Long> = _trackingStartTime
+
     private val usageStatsManager =
         context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
 
     init {
-        fetchUsageStats(context)
+        fetchUsageStats()
     }
 
-    fun fetchUsageStats(context: Context) {
+    fun fetchUsageStats() {
         viewModelScope.launch {
             if (!hasUsageStatsPermission(context)) {
                 promptUsageStatsPermission(context)
@@ -40,34 +58,17 @@ class AppUsageViewModel(context: Context) : ViewModel() {
             }
 
             val endTime = System.currentTimeMillis()
-
-            // Get current time and set the start time to 6 AM of the current day
-            val calendar = Calendar.getInstance()
-            calendar.set(Calendar.HOUR_OF_DAY, 6)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-
-            val startTime = calendar.timeInMillis
-
-            // If current time is before 6 AM, set start time to 6 AM of the previous day
-            if (endTime < startTime) {
-                calendar.add(Calendar.DAY_OF_MONTH, -1)
-            }
-
-            val adjustedStartTime = calendar.timeInMillis
-
-            Log.d("AppUsageViewModel", "lol: ${endTime - adjustedStartTime}")
+            val startTime = _trackingStartTime.value
 
             val usageStatsMap: Map<String, UsageStats> =
-                usageStatsManager.queryAndAggregateUsageStats(adjustedStartTime, endTime)
-
+                usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
 
             val filteredUsageStatsMap = usageStatsMap
                 .filter { it.value.totalTimeInForeground > 0 }
                 .filterNot {
-                    //it.key.startsWith("com.google.") ||
-                    it.key.startsWith("android.") ||
+                    it.key.startsWith("com.sec.") ||
+                            it.key.startsWith("com.kevker.lifetracker") ||
+                            it.key.startsWith("android.") ||
                             it.key.startsWith("com.samsung.")
                 }
 
@@ -77,12 +78,6 @@ class AppUsageViewModel(context: Context) : ViewModel() {
                 val topPackageName = topUsageStat.key
                 val topUsageTime = topUsageStat.value.totalTimeInForeground
 
-                Log.d("AppUsageViewModel", "Top package name: $topPackageName")
-                Log.d(
-                    "AppUsageViewModel",
-                    "Top total time in foreground: $topUsageTime milliseconds"
-                )
-
                 _usageTime.value = topUsageTime
 
                 // Get the application label (actual app name)
@@ -90,8 +85,7 @@ class AppUsageViewModel(context: Context) : ViewModel() {
                 try {
                     val appInfo = packageManager.getApplicationInfo(topPackageName, 0)
                     _topAppIcon.value = packageManager.getApplicationIcon(appInfo)
-                    _topAppName.value = packageManager.getApplicationLabel(appInfo)
-                        .toString() // Set the actual app name
+                    _topAppName.value = packageManager.getApplicationLabel(appInfo).toString()
                 } catch (e: Exception) {
                     Log.e(
                         "AppUsageViewModel",
@@ -102,9 +96,49 @@ class AppUsageViewModel(context: Context) : ViewModel() {
             } else {
                 Log.d("AppUsageViewModel", "No app found with non-zero usage time.")
             }
+
+            // Calculate total screen time
+            val totalScreenTime = filteredUsageStatsMap.values.sumOf { it.totalTimeInForeground }
+            _totalScreenTime.value = totalScreenTime
         }
     }
 
+    fun setScreenTimeGoal(goal: Long) {
+        _screenTimeGoal.value = goal
+        sharedPreferences.edit().putLong("screenTimeGoal", goal).apply()
+    }
+
+    fun setTrackingStartTime(hour: Int, minute: Int) {
+        val calendar = Calendar.getInstance(TimeZone.getTimeZone("Europe/Vienna")).apply {
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        // Ensure the date is set to today
+        val now = Calendar.getInstance(TimeZone.getTimeZone("Europe/Vienna"))
+        calendar.set(Calendar.YEAR, now.get(Calendar.YEAR))
+        calendar.set(Calendar.MONTH, now.get(Calendar.MONTH))
+        calendar.set(Calendar.DAY_OF_MONTH, now.get(Calendar.DAY_OF_MONTH))
+
+        val newStartTime = calendar.timeInMillis
+        _trackingStartTime.value = newStartTime
+        sharedPreferences.edit().putLong("trackingStartTime", newStartTime).apply()
+        fetchUsageStats()
+    }
+
+
+
+    private fun getDefaultTrackingStartTime(): Long {
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 6)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis
+    }
 
     private fun hasUsageStatsPermission(context: Context): Boolean {
         val appOpsManager =

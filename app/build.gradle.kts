@@ -55,8 +55,9 @@ android {
 }
 
 dependencies {
-
+    implementation("androidx.compose.material3:material3:1.3.0-beta03")
     implementation("androidx.room:room-runtime:2.6.1")
+    implementation(libs.androidx.games.activity)
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.media3:media3-exoplayer:1.3.1")
