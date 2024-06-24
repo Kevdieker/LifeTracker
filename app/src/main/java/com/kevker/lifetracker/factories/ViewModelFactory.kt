@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.kevker.lifetracker.data.ActivityRepository
 import com.kevker.lifetracker.data.GlassRepository
+import com.kevker.lifetracker.data.SleepRepository
 import com.kevker.lifetracker.viewmodels.*
 
 class ViewModelFactory(
     private val activityRepository: ActivityRepository? = null,
     private val glassRepository: GlassRepository? = null,
+    private val sleepRepository: SleepRepository? = null,
     private val context: Context? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -28,6 +30,10 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(HydrationViewModel::class.java) -> {
                 HydrationViewModel(repository = glassRepository!!) as T
+            }
+
+            modelClass.isAssignableFrom(SleepViewModel::class.java) -> {
+                SleepViewModel(repository = sleepRepository!!) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class")

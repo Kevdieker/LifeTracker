@@ -6,15 +6,17 @@ import androidx.room.RoomDatabase
 import android.content.Context
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.models.Glass
+import com.kevker.lifetracker.models.SleepEntity
 
 @Database(
-    entities = [Activity::class, Glass::class],
-    version = 2,
+    entities = [Activity::class, Glass::class, SleepEntity::class],
+    version = 3,
     exportSchema = false
 )
 abstract class LTDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
     abstract fun glassDao(): GlassDao
+    abstract fun sleepDao(): SleepDao
 
     companion object {
         @Volatile
