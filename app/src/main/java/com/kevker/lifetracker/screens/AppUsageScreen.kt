@@ -35,7 +35,6 @@ fun AppUsageScreen(navController: NavController) {
 
     var showDialog by remember { mutableStateOf(false) }
     var newScreenTimeGoal by remember { mutableStateOf((screenTimeGoal / (60 * 60 * 1000)).toString()) }
-
     var showStartTimePicker by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf(6) }
     var minute by remember { mutableStateOf(0) }

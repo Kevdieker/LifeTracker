@@ -6,7 +6,6 @@ import com.kevker.lifetracker.data.GlassRepository
 import com.kevker.lifetracker.models.Glass
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class HydrationViewModel(private val repository: GlassRepository) : ViewModel() {
