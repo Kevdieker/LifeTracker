@@ -18,8 +18,8 @@ import java.util.Calendar
 
 class AppUsageViewModel(private val context: Context) : ViewModel() {
 
-    private val _usageTime = MutableStateFlow(0L)
-    val usageTime: StateFlow<Long> = _usageTime
+    private val _topAppUsageTime = MutableStateFlow(0L)
+    val topAppUsageTime: StateFlow<Long> = _topAppUsageTime
 
     private val _totalScreenTime = MutableStateFlow(0L)
     val totalScreenTime: StateFlow<Long> = _totalScreenTime
@@ -78,7 +78,7 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
                 val topPackageName = topUsageStat.key
                 val topUsageTime = topUsageStat.value.totalTimeInForeground
 
-                _usageTime.value = topUsageTime
+                _topAppUsageTime.value = topUsageTime
 
                 // Get the application label (actual app name)
                 val packageManager = context.packageManager

@@ -1,6 +1,7 @@
 package com.kevker.lifetracker.screens
 
 import TimePickerDialog
+import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -9,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -20,13 +22,14 @@ import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.viewmodels.AppUsageViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
+import java.text.SimpleDateFormat
 import java.util.*
 
 @Composable
 fun AppUsageScreen(navController: NavController) {
     val context = LocalContext.current
     val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context = context))
-    val usageTime by viewModel.usageTime.collectAsState()
+    val topAppUsageTime by viewModel.topAppUsageTime.collectAsState()
     val totalScreenTime by viewModel.totalScreenTime.collectAsState()
     val topAppIcon by viewModel.topAppIcon.collectAsState()
     val topAppName by viewModel.topAppName.collectAsState()
@@ -38,8 +41,9 @@ fun AppUsageScreen(navController: NavController) {
     var showStartTimePicker by remember { mutableStateOf(false) }
     var hour by remember { mutableStateOf(6) }
     var minute by remember { mutableStateOf(0) }
+    val formatedtime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(trackingStartTime)
+    var showSettingsDialog by remember { mutableStateOf(false) }
 
-    // Ensure data is fetched whenever the screen is loaded
     LaunchedEffect(Unit) {
         viewModel.fetchUsageStats()
     }
@@ -48,37 +52,90 @@ fun AppUsageScreen(navController: NavController) {
         topBar = {
             SimpleTopAppBar(
                 title = "App Usage",
-                onNavigationIconClick = null
+                onNavigationIconClick = null,
+                onSettingsIconClick = { showSettingsDialog = true }
             )
         },
         bottomBar = { SimpleBottomAppBar(navController) }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            TrackingStartTime(startTime = trackingStartTime, modifier = Modifier.align(Alignment.Start))
-            Box(
+        Column(
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize(), // Make the column fill the entire screen
+            verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.Top), // Spaced items
+            horizontalAlignment = Alignment.CenterHorizontally // Center the contents horizontally
+
+        ) {
+            Text(
+                modifier = Modifier.align(Alignment.Start),
+                text = "Tracking started at: $formatedtime",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            CircularProgressBar(
+                totalScreenTime = totalScreenTime,
+                screenTimeGoal = screenTimeGoal
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(
+                    16.dp,
+                    Alignment.CenterHorizontally
+                ), // Adjust spacing as needed
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(16.dp) // Adjust the padding as needed
             ) {
-                CircularProgressBar(
-                    usageTime = usageTime,
-                    totalScreenTime = totalScreenTime,
-                    topAppIcon = topAppIcon,
-                    topAppName = topAppName,
-                    screenTimeGoal = screenTimeGoal
+                TopAppComposable(
+                    usageTime = topAppUsageTime,
+                    AppIcon = topAppIcon,
+                    AppName = topAppName
+                )
+                Divider(
+                    color = Color.Gray,
+                    modifier = Modifier
+                        .height(120.dp)  // Adjust the height as needed
+                        .width(1.dp)    // This width creates a vertical line
+                )
+                TopAppComposable(
+                    usageTime = topAppUsageTime,
+                    AppIcon = topAppIcon,
+                    AppName = topAppName
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
+
             AvailableTime(
                 totalScreenTime = totalScreenTime,
                 screenTimeGoal = screenTimeGoal,
-                onShowDialog = { showDialog = true },
-                onShowStartTimePicker = { showStartTimePicker = true }
-            )
+                )
         }
     }
 
+    if (showSettingsDialog) {
+        AlertDialog(
+            onDismissRequest = { showSettingsDialog = false },
+            title = { Text("Settings") },
+            text = {
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { showDialog = true }) {
+                        Text("Set Screen Time Goal")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { showStartTimePicker = true }) {
+                        Text("Set Tracking Start Time")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showSettingsDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
     if (showDialog) {
         SetGoalDialog(
             newScreenTimeGoal = newScreenTimeGoal,
@@ -104,40 +161,38 @@ fun AppUsageScreen(navController: NavController) {
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun CircularProgressBar(
-    usageTime: Long,
     totalScreenTime: Long,
-    topAppIcon: Drawable?,
-    topAppName: String,
     screenTimeGoal: Long
 ) {
     val hours = (totalScreenTime / 1000 / 3600).toInt()
     val minutes = ((totalScreenTime / 1000 % 3600) / 60).toInt()
     val seconds = (totalScreenTime / 1000 % 60).toInt()
+    val timegoal = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(screenTimeGoal)
 
     Box(contentAlignment = Alignment.Center) {
         CircularProgressIndicator(
-            progress = totalScreenTime / screenTimeGoal.toFloat(),
+            progress = { totalScreenTime / screenTimeGoal.toFloat() },
             modifier = Modifier.size(200.dp),
             color = MaterialTheme.colorScheme.primary,
             strokeWidth = 8.dp,
+            trackColor = ProgressIndicatorDefaults.circularTrackColor,
         )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (topAppIcon != null) {
-                Image(
-                    bitmap = topAppIcon.toBitmap().asImageBitmap(),
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            }
+
             Text(
                 text = String.format("%02d:%02d:%02d", hours, minutes, seconds),
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.headlineMedium
+            )
+            Text(
+                text = "/$timegoal",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
@@ -145,9 +200,48 @@ fun CircularProgressBar(
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium
             )
+
+        }
+    }
+}
+
+@SuppressLint("DefaultLocale")
+@Composable
+fun TopAppComposable(
+    usageTime: Long,
+    AppIcon: Drawable?,
+    AppName: String,
+) {
+    val hours = (usageTime / 1000 / 3600).toInt()
+    val minutes = ((usageTime / 1000 % 3600) / 60).toInt()
+    val seconds = (usageTime / 1000 % 60).toInt()
+
+    Box(contentAlignment = Alignment.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (AppIcon != null) {
+                Image(
+                    bitmap = AppIcon.toBitmap().asImageBitmap(),
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            Text(
+                text = AppName,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyMedium
+            )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = topAppName,
+                text = String.format("%02d:%02d:%02d", hours, minutes, seconds),
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Usage Time",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -155,13 +249,13 @@ fun CircularProgressBar(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun AvailableTime(
     totalScreenTime: Long,
     screenTimeGoal: Long,
-    onShowDialog: () -> Unit,
-    onShowStartTimePicker: () -> Unit
-) {
+
+    ) {
     val timeAvailable = screenTimeGoal - totalScreenTime
     val overTime = timeAvailable < 0
     val absTimeAvailable = kotlin.math.abs(timeAvailable)
@@ -176,21 +270,27 @@ fun AvailableTime(
     ) {
         Text(
             text = if (overTime) {
-                "Time over by: ${String.format("%02d:%02d:%02d", hoursAvailable, minutesAvailable, secondsAvailable)}"
+                "Time over by: ${
+                    String.format(
+                        "%02d:%02d:%02d",
+                        hoursAvailable,
+                        minutesAvailable,
+                        secondsAvailable
+                    )
+                }"
             } else {
-                "Available Time: ${String.format("%02d:%02d:%02d", hoursAvailable, minutesAvailable, secondsAvailable)}"
+                "Available Time: ${
+                    String.format(
+                        "%02d:%02d:%02d",
+                        hoursAvailable,
+                        minutesAvailable,
+                        secondsAvailable
+                    )
+                }"
             },
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = onShowDialog) {
-            Text("Set Screen Time Goal")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = onShowStartTimePicker) {
-            Text("Set Tracking Start Time")
-        }
     }
 }
 
@@ -286,23 +386,4 @@ fun SetStartTimeDialog(
             }
         }
     )
-}
-
-@Composable
-fun TrackingStartTime(startTime: Long, modifier: Modifier = Modifier) {
-    val calendar = Calendar.getInstance().apply { timeInMillis = startTime }
-    val hours = calendar.get(Calendar.HOUR_OF_DAY)
-    val minutes = calendar.get(Calendar.MINUTE)
-
-    Column(
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = "Tracking started at: ${String.format("%02d:%02d", hours, minutes)}",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.bodyMedium
-        )
-    }
 }
