@@ -2,7 +2,7 @@ package com.kevker.lifetracker.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kevker.lifetracker.data.GlassRepository
+import com.kevker.lifetracker.repositories.GlassRepository
 import com.kevker.lifetracker.models.Glass
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,5 +1,6 @@
-package com.kevker.lifetracker.data
+package com.kevker.lifetracker.repositories
 
+import com.kevker.lifetracker.data.GlassDao
 import com.kevker.lifetracker.models.Glass
 import kotlinx.coroutines.flow.Flow
 

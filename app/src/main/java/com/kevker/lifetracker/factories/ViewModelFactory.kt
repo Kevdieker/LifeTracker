@@ -3,9 +3,9 @@ package com.kevker.lifetracker.factories
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.kevker.lifetracker.data.ActivityRepository
-import com.kevker.lifetracker.data.GlassRepository
-import com.kevker.lifetracker.data.SleepRepository
+import com.kevker.lifetracker.repositories.ActivityRepository
+import com.kevker.lifetracker.repositories.GlassRepository
+import com.kevker.lifetracker.repositories.SleepRepository
 import com.kevker.lifetracker.viewmodels.*
 
 class ViewModelFactory(

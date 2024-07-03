@@ -3,7 +3,7 @@ package com.kevker.lifetracker.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kevker.lifetracker.models.SleepEntity
-import com.kevker.lifetracker.data.SleepRepository
+import com.kevker.lifetracker.repositories.SleepRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat

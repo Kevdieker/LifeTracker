@@ -1,5 +1,6 @@
-package com.kevker.lifetracker.data
+package com.kevker.lifetracker.repositories
 
+import com.kevker.lifetracker.data.SleepDao
 import com.kevker.lifetracker.models.SleepEntity
 import kotlinx.coroutines.flow.Flow
 

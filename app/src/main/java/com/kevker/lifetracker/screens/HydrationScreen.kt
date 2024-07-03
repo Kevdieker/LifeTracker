@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.data.GlassRepository
+import com.kevker.lifetracker.repositories.GlassRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.models.Glass
 

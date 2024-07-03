@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.data.SleepRepository
+import com.kevker.lifetracker.repositories.SleepRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.viewmodels.SleepViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar

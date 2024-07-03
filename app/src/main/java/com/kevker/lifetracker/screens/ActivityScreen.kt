@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.data.ActivityRepository
+import com.kevker.lifetracker.repositories.ActivityRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.navigation.Screen
 import com.kevker.lifetracker.viewmodels.ActivityViewModel

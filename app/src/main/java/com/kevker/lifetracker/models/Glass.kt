@@ -8,10 +8,6 @@ import androidx.room.PrimaryKey
 data class Glass(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-
-    @ColumnInfo(name = "amount")
     val amount: Int,
-
-    @ColumnInfo(name = "timestamp")
     val timestamp: Long = System.currentTimeMillis()
 )

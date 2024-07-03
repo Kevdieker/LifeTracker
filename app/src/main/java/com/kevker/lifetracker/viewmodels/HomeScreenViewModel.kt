@@ -1,7 +1,7 @@
 package com.kevker.lifetracker.viewmodels
 
 import androidx.lifecycle.ViewModel
-import com.kevker.lifetracker.data.ActivityRepository
+import com.kevker.lifetracker.repositories.ActivityRepository
 
 class HomeScreenViewModel(private val repository: ActivityRepository,):ViewModel(){
 
