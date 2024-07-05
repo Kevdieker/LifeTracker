@@ -55,6 +55,11 @@ android {
 }
 
 dependencies {
+    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
+    implementation("androidx.activity:activity-compose")
+    implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.material:material")
+    implementation("com.google.android.gms:play-services-fitness:21.2.0")
     implementation("androidx.compose.material3:material3:1.3.0-beta03")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation(libs.androidx.games.activity)

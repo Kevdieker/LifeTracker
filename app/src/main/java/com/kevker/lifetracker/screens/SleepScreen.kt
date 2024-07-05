@@ -1,5 +1,9 @@
 package com.kevker.lifetracker.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -21,6 +25,7 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.repositories.SleepRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
+import com.kevker.lifetracker.sampledata.NotificationHandler
 import com.kevker.lifetracker.viewmodels.SleepViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -67,7 +72,22 @@ fun SleepScreen(
     val textColor by animateColorAsState(
         targetValue = if (sleepState) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondary
     )
+    val notificationHandler = NotificationHandler(context)
 
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted, send notification
+            println("granted")
+            notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
+        } else {
+            println("denied")
+            // Permission is denied
+            // Optionally handle the case where permission is denied
+        }
+    }
     LaunchedEffect(countdownTime, countdownActive) {
         if (countdownActive && countdownTime > 0) {
             delay(1000L)
@@ -101,6 +121,24 @@ fun SleepScreen(
                 text = if (sleepState) "Asleep" else "Awake",
                 style = MaterialTheme.typography.headlineLarge
             )
+            Button(
+                onClick = {
+                    if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        == PackageManager.PERMISSION_GRANTED
+                    ) {
+                        println("send notification")
+                        // Permission already granted, send notification
+                        notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
+                    } else {
+                        // Request permission
+                        println("request permission")
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("Send Notification")
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Button(
                 onClick = {
