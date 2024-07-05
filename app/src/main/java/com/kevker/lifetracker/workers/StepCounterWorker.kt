@@ -1,8 +1,9 @@
-package com.kevker.lifetracker.sampledata
+package com.kevker.lifetracker.workers
 
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.kevker.lifetracker.APIs.StepCounter
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.repositories.StepRepository
 

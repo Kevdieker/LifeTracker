@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.repositories.StepRepository
-import com.kevker.lifetracker.sampledata.PermissionHandler
+import com.kevker.lifetracker.handlers.PermissionHandler
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar

@@ -9,8 +9,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kevker.lifetracker.repositories.StepRepository
-import com.kevker.lifetracker.sampledata.PermissionHandler
+import com.kevker.lifetracker.handlers.PermissionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch

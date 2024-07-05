@@ -1,11 +1,10 @@
 package com.kevker.lifetracker.factories
 
 import android.content.Context
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.kevker.lifetracker.repositories.*
-import com.kevker.lifetracker.sampledata.PermissionHandler
+import com.kevker.lifetracker.handlers.PermissionHandler
 import com.kevker.lifetracker.viewmodels.*
 
 class ViewModelFactory(

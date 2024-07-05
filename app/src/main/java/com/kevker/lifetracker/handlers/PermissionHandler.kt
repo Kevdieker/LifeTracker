@@ -1,4 +1,4 @@
-package com.kevker.lifetracker.sampledata
+package com.kevker.lifetracker.handlers
 
 import android.Manifest
 import android.content.Context

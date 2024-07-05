@@ -1,4 +1,4 @@
-package com.kevker.lifetracker.sampledata
+package com.kevker.lifetracker.APIs
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent

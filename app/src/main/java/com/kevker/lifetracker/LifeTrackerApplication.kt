@@ -8,8 +8,8 @@ import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.kevker.lifetracker.sampledata.PermissionHandler
-import com.kevker.lifetracker.sampledata.StepCounterWorker
+import com.kevker.lifetracker.handlers.PermissionHandler
+import com.kevker.lifetracker.workers.StepCounterWorker
 import java.util.concurrent.TimeUnit
 
 class LifeTrackerApplication : Application(), Configuration.Provider {

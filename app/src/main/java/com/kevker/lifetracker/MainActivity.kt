@@ -1,8 +1,5 @@
 package com.kevker.lifetracker
 
-
-
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +9,7 @@ import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.navigation.Navigation
 import com.kevker.lifetracker.repositories.StepRepository
-import com.kevker.lifetracker.sampledata.PermissionHandler
+import com.kevker.lifetracker.handlers.PermissionHandler
 
 import com.kevker.lifetracker.ui.theme.LifeTrackerTheme
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
