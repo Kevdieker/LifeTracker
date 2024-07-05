@@ -1,12 +1,18 @@
 package com.kevker.lifetracker.screens
 
 import android.Manifest
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,11 +30,14 @@ import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.repositories.SleepRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.handlers.NotificationHandler
+import com.kevker.lifetracker.handlers.SleepAlarmReceiver
 import com.kevker.lifetracker.viewmodels.SleepViewModel
+import com.kevker.lifetracker.widget.SetSleepTimeDialog
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
+import java.util.Calendar
 
 @Composable
 fun SleepScreen(
@@ -39,6 +48,11 @@ fun SleepScreen(
     val sleepRepository = SleepRepository(database.sleepDao())
     val factory = ViewModelFactory(sleepRepository = sleepRepository)
     val viewModel: SleepViewModel = viewModel(factory = factory)
+
+    val sharedPreferences = context.getSharedPreferences("LifeTrackerPrefs", Context.MODE_PRIVATE)
+    val isAlarmSet = remember { mutableStateOf(sharedPreferences.getBoolean("isAlarmSet", false)) }
+    val alarmTime =
+        remember { mutableStateOf(sharedPreferences.getString("alarmTime", "20:00") ?: "20:00") }
 
     val sleepState by viewModel.sleepState.collectAsState()
     val yesterdaySleepDuration by viewModel.yesterdaySleepDuration.collectAsState()
@@ -96,7 +110,18 @@ fun SleepScreen(
             }
         }
     }
+    val setTime: (Int, Int) -> Unit = { hour, minute ->
+        val timeString = String.format("%02d:%02d", hour, minute)
+        with(sharedPreferences.edit()) {
+            putString("alarmTime", timeString)
+            putBoolean("isAlarmSet", true)
+            apply()
+        }
+        alarmTime.value = timeString
+        isAlarmSet.value = true
+        setDailySleepNotification(context, hour, minute)
 
+    }
     Scaffold(
         topBar = {
             SimpleTopAppBar(
@@ -200,60 +225,76 @@ fun SleepScreen(
             Button(onClick = { showAllEntries = !showAllEntries }) {
                 Text("Show All Sleep Entries")
             }
+
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(if (isAlarmSet.value) Color.Green else Color.Red)
+            )
+
+            if (showSettingsDialog) {
+                SetSleepTimeDialog(
+                    onDismiss = { showSettingsDialog = false },
+                    onTimeSet = setTime
+                )
+            }
+
+
             if (showAllEntries) {
-                LazyColumn(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
                     items(allSleepEntries) { sleepEntry ->
                         Text(
-                            text = "Start: ${viewModel.formatTime(sleepEntry.startTime)} - End: ${viewModel.formatTime(sleepEntry.endTime)}",
+                            text = "Start: ${viewModel.formatTime(sleepEntry.startTime)} - End: ${
+                                viewModel.formatTime(
+                                    sleepEntry.endTime
+                                )
+                            }",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(8.dp)
                         )
                     }
                 }
             }
+
         }
-    }
 
-    if (showSettingsDialog) {
-        AlertDialog(
-            onDismissRequest = { showSettingsDialog = false },
-            title = { Text("Settings") },
-            text = {
-                Column {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Button(onClick = { showDialog = true }) {
-                        Text("Set Sleeptime reminder")
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showSettingsDialog = false }) {
-                    Text("Close")
-                }
-            }
-        )
-    }
 
-    if (showDialog) {
-     Text(text = "uh")
+    }
 }
-    @Composable
-    fun SetSleepTimeDialog(
-        onDismiss: () -> Unit,
-    ) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text("Set Sleep Time Reminder") },
-            text = {
 
-            },
-            confirmButton = {
-
-            },
-            dismissButton = {
-
-            }
-        )}
+// Function to set the alarm
+fun setDailySleepNotification(context: Context, hour: Int, minute: Int) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val intent = Intent(context, SleepAlarmReceiver::class.java)
+    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    } else {
+        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
+
+    val calendar: Calendar = Calendar.getInstance().apply {
+        timeInMillis = System.currentTimeMillis()
+        set(Calendar.HOUR_OF_DAY, hour)
+        set(Calendar.MINUTE, minute)
+    }
+
+    if (calendar.timeInMillis <= System.currentTimeMillis()) {
+        calendar.add(Calendar.DAY_OF_MONTH, 1)
+    }
+
+    alarmManager.setRepeating(
+        AlarmManager.RTC_WAKEUP,
+        calendar.timeInMillis,
+        AlarmManager.INTERVAL_DAY,
+        pendingIntent
+    )
+}
