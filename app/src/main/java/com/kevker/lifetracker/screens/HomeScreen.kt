@@ -13,7 +13,6 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.repositories.StepRepository
-import com.kevker.lifetracker.handlers.PermissionHandler
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -23,8 +22,7 @@ fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(context)
     val stepRepository = StepRepository.getInstance(db.stepCountDao())
-    val permissionHandler = PermissionHandler(context)
-    val factory = ViewModelFactory(context = context, permissionHandler = permissionHandler)
+    val factory = ViewModelFactory(context = context)
     val viewModel: HomeScreenViewModel = viewModel(factory = factory)
 
     val stepCount by viewModel.stepCount.collectAsState()

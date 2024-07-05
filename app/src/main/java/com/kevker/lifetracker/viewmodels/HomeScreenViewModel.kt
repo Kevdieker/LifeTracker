@@ -9,7 +9,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kevker.lifetracker.handlers.PermissionHandler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,8 +16,6 @@ import java.util.Calendar
 
 class HomeScreenViewModel(
     private val context: Context,
-    //private val repository: StepRepository,
-    private val permissionHandler: PermissionHandler
 ) : ViewModel() {
 
     private val _stepCount = MutableStateFlow(0L)
@@ -30,17 +27,6 @@ class HomeScreenViewModel(
     private var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
 
-    init {
-        checkPermission()
-    }
-
-    private fun checkPermission() {
-        _isPermissionGranted.value = permissionHandler.isPermissionGranted(PermissionHandler.ACTIVITY_RECOGNITION_PERMISSION)
-    }
-
-    fun requestPermission() {
-        permissionHandler.requestPermission(PermissionHandler.ACTIVITY_RECOGNITION_PERMISSION)
-    }
 
     fun startStepSensor() {
         if (_isPermissionGranted.value == true) {

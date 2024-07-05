@@ -9,9 +9,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
-import com.kevker.lifetracker.repositories.ActivityRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
+
 import com.kevker.lifetracker.models.Activity
+import com.kevker.lifetracker.repositories.ActivityRepository
 import com.kevker.lifetracker.viewmodels.ActivityViewModel
 import com.kevker.lifetracker.widget.SimpleTopAppBar
 import kotlinx.coroutines.launch
