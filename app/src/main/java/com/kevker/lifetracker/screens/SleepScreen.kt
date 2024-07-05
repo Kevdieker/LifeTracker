@@ -6,12 +6,14 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +45,9 @@ fun SleepScreen(
     var countdownTime by remember { mutableStateOf(0) }
     var countdownActive by remember { mutableStateOf(false) }
     var showAllEntries by remember { mutableStateOf(false) }
+    var showSettingsDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+
 
     val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Cyan, Color.Magenta)
     val infiniteTransition = rememberInfiniteTransition()
@@ -78,7 +83,8 @@ fun SleepScreen(
         topBar = {
             SimpleTopAppBar(
                 title = "Sleep Tracker",
-                onNavigationIconClick = null
+                onNavigationIconClick = null,
+                onSettingsIconClick = { showSettingsDialog = true }
             )
         },
         bottomBar = { SimpleBottomAppBar(navController) }
@@ -159,7 +165,9 @@ fun SleepScreen(
                 Text("Show All Sleep Entries")
             }
             if (showAllEntries) {
-                LazyColumn(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                LazyColumn(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)) {
                     items(allSleepEntries) { sleepEntry ->
                         Text(
                             text = "Start: ${viewModel.formatTime(sleepEntry.startTime)} - End: ${viewModel.formatTime(sleepEntry.endTime)}",
@@ -171,4 +179,45 @@ fun SleepScreen(
             }
         }
     }
+
+    if (showSettingsDialog) {
+        AlertDialog(
+            onDismissRequest = { showSettingsDialog = false },
+            title = { Text("Settings") },
+            text = {
+                Column {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = { showDialog = true }) {
+                        Text("Set Sleeptime reminder")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showSettingsDialog = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+
+    if (showDialog) {
+     Text(text = "uh")
 }
+    @Composable
+    fun SetSleepTimeDialog(
+        onDismiss: () -> Unit,
+    ) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Set Sleep Time Reminder") },
+            text = {
+
+            },
+            confirmButton = {
+
+            },
+            dismissButton = {
+
+            }
+        )}
+    }
