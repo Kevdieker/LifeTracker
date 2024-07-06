@@ -51,8 +51,7 @@ fun SleepScreen(
 
     val sharedPreferences = context.getSharedPreferences("LifeTrackerPrefs", Context.MODE_PRIVATE)
     val isAlarmSet = remember { mutableStateOf(sharedPreferences.getBoolean("isAlarmSet", false)) }
-    val alarmTime =
-        remember { mutableStateOf(sharedPreferences.getString("alarmTime", "20:00") ?: "20:00") }
+    val alarmTime = remember { mutableStateOf(sharedPreferences.getString("alarmTime", "20:00") ?: "20:00") }
 
     val sleepState by viewModel.sleepState.collectAsState()
     val yesterdaySleepDuration by viewModel.yesterdaySleepDuration.collectAsState()
@@ -63,8 +62,6 @@ fun SleepScreen(
     var countdownActive by remember { mutableStateOf(false) }
     var showAllEntries by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
-    var showDialog by remember { mutableStateOf(false) }
-
 
     val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Cyan, Color.Magenta)
     val infiniteTransition = rememberInfiniteTransition()
@@ -86,20 +83,16 @@ fun SleepScreen(
     )
     val notificationHandler = NotificationHandler(context)
 
-
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Permission is granted, send notification
-            println("granted")
             notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
         } else {
-            println("denied")
-            // Permission is denied
             // Optionally handle the case where permission is denied
         }
     }
+
     LaunchedEffect(countdownTime, countdownActive) {
         if (countdownActive && countdownTime > 0) {
             delay(1000L)
@@ -110,6 +103,7 @@ fun SleepScreen(
             }
         }
     }
+
     val setTime: (Int, Int) -> Unit = { hour, minute ->
         val timeString = String.format("%02d:%02d", hour, minute)
         with(sharedPreferences.edit()) {
@@ -120,8 +114,19 @@ fun SleepScreen(
         alarmTime.value = timeString
         isAlarmSet.value = true
         setDailySleepNotification(context, hour, minute)
-
     }
+
+    val cancelReminder: () -> Unit = {
+        with(sharedPreferences.edit()) {
+            remove("alarmTime")
+            putBoolean("isAlarmSet", false)
+            apply()
+        }
+        alarmTime.value = ""
+        isAlarmSet.value = false
+        cancelDailySleepNotification(context)
+    }
+
     Scaffold(
         topBar = {
             SimpleTopAppBar(
@@ -149,12 +154,8 @@ fun SleepScreen(
                     if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                         == PackageManager.PERMISSION_GRANTED
                     ) {
-                        println("send notification")
-                        // Permission already granted, send notification
                         notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
                     } else {
-                        // Request permission
-                        println("request permission")
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 },
@@ -230,15 +231,17 @@ fun SleepScreen(
                 modifier = Modifier
                     .size(50.dp)
                     .background(if (isAlarmSet.value) Color.Green else Color.Red)
+                    .align(Alignment.Start)
+                    .padding(top = 16.dp, end = 16.dp)
             )
 
             if (showSettingsDialog) {
                 SetSleepTimeDialog(
                     onDismiss = { showSettingsDialog = false },
-                    onTimeSet = setTime
+                    onTimeSet = setTime,
+                    onCancel = cancelReminder
                 )
             }
-
 
             if (showAllEntries) {
                 LazyColumn(
@@ -248,21 +251,14 @@ fun SleepScreen(
                 ) {
                     items(allSleepEntries) { sleepEntry ->
                         Text(
-                            text = "Start: ${viewModel.formatTime(sleepEntry.startTime)} - End: ${
-                                viewModel.formatTime(
-                                    sleepEntry.endTime
-                                )
-                            }",
+                            text = "Start: ${viewModel.formatTime(sleepEntry.startTime)} - End: ${viewModel.formatTime(sleepEntry.endTime)}",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier.padding(8.dp)
                         )
                     }
                 }
             }
-
         }
-
-
     }
 }
 
@@ -298,3 +294,24 @@ fun setDailySleepNotification(context: Context, hour: Int, minute: Int) {
         pendingIntent
     )
 }
+
+
+// Function to cancel the alarm
+fun cancelDailySleepNotification(context: Context) {
+    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+    val intent = Intent(context, SleepAlarmReceiver::class.java)
+    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    } else {
+        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+    }
+    alarmManager.cancel(pendingIntent)
+}
+
+
+
