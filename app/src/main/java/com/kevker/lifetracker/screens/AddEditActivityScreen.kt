@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
+import com.kevker.lifetracker.enums.Category
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.handlers.ActivityReminderReceiver
 import com.kevker.lifetracker.handlers.NotificationHandler
@@ -53,6 +54,7 @@ fun AddEditActivityScreen(
     var reminderTime by remember { mutableStateOf<Long?>(null) }
     var reminderDaysOfWeek by remember { mutableStateOf<List<Int>>(emptyList()) }
     var isTitleError by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<Category?>(null) }
 
     val notificationHandler = NotificationHandler(context)
     var showDatePicker by remember { mutableStateOf(false) }
@@ -72,6 +74,7 @@ fun AddEditActivityScreen(
                         hasReminder = it.hasReminder
                         reminderTime = it.reminderTime
                         reminderDaysOfWeek = it.reminderDaysOfWeek
+                        selectedCategory = it.category
                         activity = it
                     }
                 }
@@ -170,7 +173,6 @@ fun AddEditActivityScreen(
                     Text("Select Goal Date")
                 }
 
-
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
@@ -221,8 +223,43 @@ fun AddEditActivityScreen(
                         }
                     }
 
-
                     Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Category Dropdown
+                val categories = Category.values().toList()
+                var expanded by remember { mutableStateOf(false) }
+
+                Box {
+                    Button(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
+                        Text(selectedCategory?.name ?: "Select Category")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Option for "No Category"
+                        DropdownMenuItem(
+                            text = { Text("No Category") },
+                            onClick = {
+                                selectedCategory = null
+                                expanded = false
+                            }
+                        )
+                        // List of categories
+                        categories.forEach { category ->
+                            DropdownMenuItem(
+                                text = { Text(category.name) },
+                                onClick = {
+                                    selectedCategory = category
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -236,15 +273,13 @@ fun AddEditActivityScreen(
                                     date = date,
                                     hasReminder = hasReminder,
                                     reminderTime = reminderTime,
-                                    reminderDaysOfWeek = reminderDaysOfWeek
+                                    reminderDaysOfWeek = reminderDaysOfWeek,
+                                    category = selectedCategory
                                 )
-                                println("hängt es sich hier auf?")
-                                var activityId= viewModel.addActivity(newActivity)
-                                println("genau hier")
+                                val activityId = viewModel.addActivity(newActivity)
                                 if (hasReminder) {
-                                    notificationHandler.scheduleWeeklyReminders(context, newActivity.copy(activityId=activityId))
+                                    notificationHandler.scheduleWeeklyReminders(context, newActivity.copy(activityId = activityId))
                                 }
-                                println("oder doch hier")
                             } else {
                                 activity?.let {
                                     val updatedActivity = it.copy(
@@ -253,12 +288,12 @@ fun AddEditActivityScreen(
                                         date = date,
                                         hasReminder = hasReminder,
                                         reminderTime = reminderTime,
-                                        reminderDaysOfWeek = reminderDaysOfWeek
+                                        reminderDaysOfWeek = reminderDaysOfWeek,
+                                        category = selectedCategory
                                     )
                                     viewModel.updateActivity(updatedActivity)
                                     if (hasReminder) {
-                                        println("reminder is set")
-                                        notificationHandler.scheduleWeeklyReminders(context, it)
+                                        notificationHandler.scheduleWeeklyReminders(context, updatedActivity)
                                     } else {
                                         notificationHandler.cancelReminder(context, it.activityId)
                                     }
@@ -271,7 +306,6 @@ fun AddEditActivityScreen(
                 ) {
                     Text(if (activityId == null) "Add Activity" else "Save Changes")
                 }
-
             }
         }
     )
