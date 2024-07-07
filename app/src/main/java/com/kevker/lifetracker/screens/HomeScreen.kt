@@ -1,5 +1,6 @@
 package com.kevker.lifetracker.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -10,9 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
-import com.kevker.lifetracker.repositories.StepRepository
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -20,10 +19,7 @@ import com.kevker.lifetracker.widget.SimpleTopAppBar
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
-    val db = LTDatabase.getDatabase(context)
-    val stepRepository = StepRepository.getInstance(db.stepCountDao())
-    val factory = ViewModelFactory(context = context)
-    val viewModel: HomeScreenViewModel = viewModel(factory = factory)
+    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context = context))
 
     val stepCount by viewModel.stepCount.collectAsState()
 
@@ -36,6 +32,8 @@ fun HomeScreen(navController: NavController) {
         },
         bottomBar = { SimpleBottomAppBar(navController) }
     ) { innerPadding ->
-        Text(modifier = Modifier.padding(innerPadding), text = "Steps: $stepCount")
+        Column(modifier = Modifier.padding(innerPadding)) {
+            Text(text = "Steps: $stepCount")
+        }
     }
 }

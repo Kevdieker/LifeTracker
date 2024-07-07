@@ -16,7 +16,7 @@ class ViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(HomeScreenViewModel::class.java) -> {
-                HomeScreenViewModel(context!!) as T
+                HomeScreenViewModel(context= context!!) as T
             }
             modelClass.isAssignableFrom(ActivityViewModel::class.java) -> {
                 ActivityViewModel(repository = activityRepository!!) as T

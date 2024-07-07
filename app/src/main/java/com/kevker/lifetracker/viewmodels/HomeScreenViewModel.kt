@@ -5,66 +5,57 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 class HomeScreenViewModel(
     private val context: Context,
-) : ViewModel() {
+) : ViewModel(), SensorEventListener {
 
     private val _stepCount = MutableStateFlow(0L)
     val stepCount: StateFlow<Long> = _stepCount
 
-    private val _isPermissionGranted = MutableLiveData<Boolean>()
-    val isPermissionGranted: LiveData<Boolean> = _isPermissionGranted
-
     private var sensorManager: SensorManager? = null
     private var stepSensor: Sensor? = null
 
+    private var initialStepCount: Long = -1
 
-    fun startStepSensor() {
-        if (_isPermissionGranted.value == true) {
-            sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-            stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-            stepSensor?.let {
-                sensorManager?.registerListener(object : SensorEventListener {
-                    override fun onSensorChanged(event: SensorEvent) {
-                        _stepCount.value = event.values[0].toLong()
-                    }
+    init {
+        startStepSensor()
+    }
 
-                    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                        // Handle accuracy changes if necessary
-                    }
-                }, it, SensorManager.SENSOR_DELAY_UI)
+    private fun startStepSensor() {
+        sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        stepSensor?.let {
+            sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
+        }
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
+            val steps = event.values[0].toLong()
+            if (initialStepCount < 0) {
+                initialStepCount = steps
             }
-
-            // Load initial step count from the repository or other source
+            val currentSteps = steps - initialStepCount
             viewModelScope.launch {
-                val startOfToday = getStartOfToday()
-
+                _stepCount.value = currentSteps
+                Log.d("StepCounter", "Current Steps: $currentSteps")
             }
         }
     }
 
-    fun stopStepSensor() {
-        sensorManager?.unregisterListener(object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {}
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-        })
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        // Handle accuracy changes if necessary
     }
 
-    private fun getStartOfToday(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
-        return calendar.timeInMillis
+    override fun onCleared() {
+        super.onCleared()
+        sensorManager?.unregisterListener(this)
     }
 }
