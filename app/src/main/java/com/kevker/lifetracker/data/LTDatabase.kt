@@ -11,7 +11,7 @@ import com.kevker.lifetracker.models.StepCount
 
 @Database(
     entities = [Activity::class, Glass::class, SleepEntity::class,StepCount::class],
-    version = 3,
+    version = 1,
     exportSchema = false
 )
 abstract class LTDatabase : RoomDatabase() {

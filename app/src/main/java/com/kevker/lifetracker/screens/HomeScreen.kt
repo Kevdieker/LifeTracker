@@ -11,7 +11,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
+import com.kevker.lifetracker.repositories.GlassRepository
+import com.kevker.lifetracker.repositories.StepRepository
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -19,7 +22,9 @@ import com.kevker.lifetracker.widget.SimpleTopAppBar
 @Composable
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
-    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context = context))
+    val db = LTDatabase.getDatabase(LocalContext.current)
+    val repository = StepRepository.getInstance(db.stepCountDao())
+    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context = context, stepRepository = repository))
 
     val stepCount by viewModel.stepCount.collectAsState()
 

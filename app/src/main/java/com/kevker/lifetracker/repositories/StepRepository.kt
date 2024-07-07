@@ -6,16 +6,12 @@ import kotlinx.coroutines.flow.Flow
 
 class StepRepository(private val stepsDao: StepCountDao) {
 
-    suspend fun storeSteps(stepsSinceLastReboot: Long) {
-        val stepCount = StepCount(
-            steps = stepsSinceLastReboot,
-            createdAt = System.currentTimeMillis()
-        )
+    suspend fun storeSteps(stepCount: StepCount) {
         stepsDao.insertAll(stepCount)
     }
 
-    fun loadTodaySteps(startDateTime: Long): Flow<List<StepCount>> {
-        return stepsDao.loadAllStepsFromToday(startDateTime, endDateTime = 2)
+    fun loadTodaySteps(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>> {
+        return stepsDao.loadAllStepsFromToday(startDateTime, endDateTime)
     }
 
     companion object {
@@ -28,3 +24,6 @@ class StepRepository(private val stepsDao: StepCountDao) {
             }
     }
 }
+
+
+
