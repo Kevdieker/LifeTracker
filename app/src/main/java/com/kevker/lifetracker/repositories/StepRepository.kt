@@ -4,8 +4,7 @@ import com.kevker.lifetracker.data.StepCountDao
 import com.kevker.lifetracker.models.StepCount
 import kotlinx.coroutines.flow.Flow
 
-class StepRepository(private val stepsDao: StepCountDao) {
-
+class StepRepository private constructor(private val stepsDao: StepCountDao) {
     suspend fun storeSteps(stepCount: StepCount) {
         stepsDao.insertAll(stepCount)
     }
@@ -13,6 +12,7 @@ class StepRepository(private val stepsDao: StepCountDao) {
     fun loadTodaySteps(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>> {
         return stepsDao.loadAllStepsFromToday(startDateTime, endDateTime)
     }
+
     fun loadStepsForPeriod(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>> {
         return stepsDao.loadAllStepsFromPeriod(startDateTime, endDateTime)
     }
@@ -21,12 +21,9 @@ class StepRepository(private val stepsDao: StepCountDao) {
         @Volatile
         private var instance: StepRepository? = null
 
-        fun getInstance(stepsDao: StepCountDao) =
+        fun getInstance(stepsDao: StepCountDao): StepRepository =
             instance ?: synchronized(this) {
                 instance ?: StepRepository(stepsDao).also { instance = it }
             }
     }
 }
-
-
-

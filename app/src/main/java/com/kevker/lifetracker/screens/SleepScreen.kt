@@ -39,7 +39,7 @@ fun SleepScreen(
 ) {
     val context = LocalContext.current
     val database = LTDatabase.getDatabase(context)
-    val sleepRepository = SleepRepository(database.sleepDao())
+    val sleepRepository = remember { SleepRepository.getInstance(database.sleepDao()) }
     val factory = ViewModelFactory(context,sleepRepository = sleepRepository)
     val viewModel: SleepViewModel = viewModel(factory = factory)
 

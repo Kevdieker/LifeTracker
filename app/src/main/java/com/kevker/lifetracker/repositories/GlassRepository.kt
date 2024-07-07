@@ -4,7 +4,7 @@ import com.kevker.lifetracker.data.GlassDao
 import com.kevker.lifetracker.models.Glass
 import kotlinx.coroutines.flow.Flow
 
-class GlassRepository(private val glassDao: GlassDao) {
+class GlassRepository private constructor(private val glassDao: GlassDao) {
     suspend fun add(glass: Glass) = glassDao.add(glass)
     suspend fun delete(glass: Glass) = glassDao.delete(glass)
     suspend fun update(glass: Glass) = glassDao.update(glass)
@@ -14,7 +14,7 @@ class GlassRepository(private val glassDao: GlassDao) {
         @Volatile
         private var instance: GlassRepository? = null
 
-        fun getInstance(glassDao: GlassDao) =
+        fun getInstance(glassDao: GlassDao): GlassRepository =
             instance ?: synchronized(this) {
                 instance ?: GlassRepository(glassDao).also { instance = it }
             }
