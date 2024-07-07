@@ -125,7 +125,7 @@ class NotificationHandler(private val context: Context) {
         val calendar: Calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
             set(Calendar.HOUR_OF_DAY, 15)
-            set(Calendar.MINUTE, 25)
+            set(Calendar.MINUTE, 40)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }

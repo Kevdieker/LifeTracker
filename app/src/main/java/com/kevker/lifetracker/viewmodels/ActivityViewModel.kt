@@ -36,18 +36,12 @@ class ActivityViewModel(private val context: Context, private val repository: Ac
         }
     }
 
-     suspend fun addActivity(activity: Activity):Long {
-
-            return repository.add(activity)
-
-
+    suspend fun addActivity(activity: Activity):Long {
+         return repository.add(activity)
     }
 
-    fun updateActivity(activity: Activity) {
-        viewModelScope.launch {
-            repository.update(activity)
-            scheduleWeeklyReminders(activity)
-        }
+    suspend fun updateActivity(activity: Activity) {
+        return repository.update(activity)
     }
 
     fun getActivityById(activityId: Long): StateFlow<Activity?> {
