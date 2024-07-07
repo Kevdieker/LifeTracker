@@ -23,6 +23,9 @@ fun Navigation(){
         composable("weekly_steps") {
             WeeklyStepsScreen(navController = navController)
         }
+        composable("weekly_hydration") {
+            WeeklyHydrationScreen(navController = navController)
+        }
         composable(route = Screen.Sleep.route) {
             SleepScreen(navController = navController)
         }

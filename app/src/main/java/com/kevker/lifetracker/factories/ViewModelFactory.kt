@@ -30,6 +30,9 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(HydrationViewModel::class.java) -> {
                 HydrationViewModel(repository = glassRepository!!) as T
             }
+            modelClass.isAssignableFrom(WeeklyHydrationViewModel::class.java) -> {
+                WeeklyHydrationViewModel(context= context!!,repository = glassRepository!!) as T
+            }
             modelClass.isAssignableFrom(SleepViewModel::class.java) -> {
                 SleepViewModel(repository = sleepRepository!!) as T
             }

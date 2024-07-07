@@ -3,6 +3,9 @@ package com.kevker.lifetracker.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,7 +51,14 @@ fun HydrationScreen(navController: NavController) {
                 onNavigationIconClick = null
             )
         },
-        bottomBar = { SimpleBottomAppBar(navController) }
+        bottomBar = { SimpleBottomAppBar(navController) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = {
+                navController.navigate("weekly_hydration")
+            }) {
+                Icon(Icons.Filled.Search, contentDescription = "Weekly Hydration")
+            }
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -112,6 +122,7 @@ fun HydrationScreen(navController: NavController) {
         }
     )
 }
+
 
 
 
