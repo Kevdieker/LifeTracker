@@ -6,5 +6,10 @@ enum class Category {
     ENTERTAINMENT,
     SPORTS,
     MEDICATION,
+    FAMILY,
+    HEALTH,
+    SOCIAL,
+    HOUSEHOLD,
+    HOBBIES,
     OTHER
 }

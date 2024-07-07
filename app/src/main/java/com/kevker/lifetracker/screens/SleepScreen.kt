@@ -47,7 +47,7 @@ fun SleepScreen(
     val context = LocalContext.current
     val database = LTDatabase.getDatabase(context)
     val sleepRepository = SleepRepository(database.sleepDao())
-    val factory = ViewModelFactory(sleepRepository = sleepRepository)
+    val factory = ViewModelFactory(context,sleepRepository = sleepRepository)
     val viewModel: SleepViewModel = viewModel(factory = factory)
 
     val sharedPreferences = context.getSharedPreferences("LifeTrackerPrefs", Context.MODE_PRIVATE)

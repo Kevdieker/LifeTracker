@@ -25,7 +25,7 @@ import java.util.*
 @Composable
 fun AllAppUsageScreen(navController: NavController) {
     val context = LocalContext.current
-    val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context = context))
+    val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context))
 
     val allAppUsages by viewModel.allAppUsages.collectAsState()
 

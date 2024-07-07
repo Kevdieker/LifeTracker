@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Menu
@@ -53,7 +55,7 @@ fun ActivityScreen(
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(context)
     val activityRepository = ActivityRepository(activityDao = db.activityDao())
-    val factory = ViewModelFactory(context = context, activityRepository = activityRepository)
+    val factory = ViewModelFactory(context, activityRepository= activityRepository)
     val viewModel: ActivityViewModel = viewModel(factory = factory)
     val activitiesState by viewModel.activities.collectAsState()
 
@@ -126,15 +128,13 @@ fun SimpleTopAppBar2(
     )
 }
 
-
-
 @Composable
 fun CategoryFilterMenu(
     categories: List<Category>,
     selectedCategory: Category?,
     onCategorySelected: (Category?) -> Unit
 ) {
-    Column {
+    Column( modifier = Modifier.verticalScroll(rememberScrollState())) {
         Text("Select Category", modifier = Modifier.padding(20.dp))
 
         // Option for "No Category"

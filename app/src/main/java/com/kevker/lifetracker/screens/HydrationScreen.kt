@@ -28,9 +28,10 @@ import com.kevker.lifetracker.widget.Waterjug
 
 @Composable
 fun HydrationScreen(navController: NavController) {
-    val db = LTDatabase.getDatabase(LocalContext.current)
+    val context = LocalContext.current
+    val db = LTDatabase.getDatabase(context)
     val glassRepository = GlassRepository.getInstance(db.glassDao())
-    val factory = ViewModelFactory(glassRepository = glassRepository)
+    val factory = ViewModelFactory(context,glassRepository = glassRepository)
     val viewModel: HydrationViewModel = viewModel(factory = factory)
 
     val glasses by viewModel.glasses.collectAsState()

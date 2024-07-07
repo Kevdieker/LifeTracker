@@ -33,8 +33,8 @@ import java.io.OutputStream
 fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(LocalContext.current)
-    val repository = StepRepository.getInstance(db.stepCountDao())
-    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context = context, stepRepository = repository))
+    val stepRepository = StepRepository.getInstance(db.stepCountDao())
+    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context, stepRepository = stepRepository))
 
     val stepCount by viewModel.stepCount.collectAsState()
     var showSettingsDialog by remember { mutableStateOf(false) }

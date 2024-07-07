@@ -42,7 +42,7 @@ fun AddEditActivityScreen(
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(context)
     val activityRepository = ActivityRepository(activityDao = db.activityDao())
-    val factory = ViewModelFactory(context = context, activityRepository = activityRepository)
+    val factory = ViewModelFactory(context,activityRepository = activityRepository)
     val viewModel: ActivityViewModel = viewModel(factory = factory)
 
     val coroutineScope = rememberCoroutineScope()

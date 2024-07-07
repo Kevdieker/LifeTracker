@@ -7,36 +7,43 @@ import com.kevker.lifetracker.repositories.*
 import com.kevker.lifetracker.viewmodels.*
 
 class ViewModelFactory(
+    private val applicationContext: Context,
     private val stepRepository: StepRepository? = null,
     private val activityRepository: ActivityRepository? = null,
     private val glassRepository: GlassRepository? = null,
-    private val sleepRepository: SleepRepository? = null,
-    private val context: Context? = null,
+    private val sleepRepository: SleepRepository? = null
 ) : ViewModelProvider.Factory {
+
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         return when {
             modelClass.isAssignableFrom(HomeScreenViewModel::class.java) -> {
-                HomeScreenViewModel(context= context!!,repository= stepRepository!!) as T
+                val repo = stepRepository ?: throw IllegalArgumentException("StepRepository is required for HomeScreenViewModel")
+                HomeScreenViewModel(applicationContext, repo) as T
             }
             modelClass.isAssignableFrom(WeeklyStepsViewModel::class.java) -> {
-                WeeklyStepsViewModel(context= context!!,repository= stepRepository!!) as T
+                val repo = stepRepository ?: throw IllegalArgumentException("StepRepository is required for WeeklyStepsViewModel")
+                WeeklyStepsViewModel(applicationContext, repo) as T
             }
             modelClass.isAssignableFrom(ActivityViewModel::class.java) -> {
-                ActivityViewModel(context= context!!,repository = activityRepository!!) as T
+                val repo = activityRepository ?: throw IllegalArgumentException("ActivityRepository is required for ActivityViewModel")
+                ActivityViewModel(applicationContext, repo) as T
             }
             modelClass.isAssignableFrom(AppUsageViewModel::class.java) -> {
-                AppUsageViewModel(context = context!!) as T
+                AppUsageViewModel(applicationContext) as T
             }
             modelClass.isAssignableFrom(HydrationViewModel::class.java) -> {
-                HydrationViewModel(repository = glassRepository!!) as T
+                val repo = glassRepository ?: throw IllegalArgumentException("GlassRepository is required for HydrationViewModel")
+                HydrationViewModel(repo) as T
             }
             modelClass.isAssignableFrom(WeeklyHydrationViewModel::class.java) -> {
-                WeeklyHydrationViewModel(context= context!!,repository = glassRepository!!) as T
+                val repo = glassRepository ?: throw IllegalArgumentException("GlassRepository is required for WeeklyHydrationViewModel")
+                WeeklyHydrationViewModel(applicationContext, repo) as T
             }
             modelClass.isAssignableFrom(SleepViewModel::class.java) -> {
-                SleepViewModel(repository = sleepRepository!!) as T
+                val repo = sleepRepository ?: throw IllegalArgumentException("SleepRepository is required for SleepViewModel")
+                SleepViewModel(repo) as T
             }
-            else -> throw IllegalArgumentException("Unknown ViewModel class")
+            else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         }
     }
 }

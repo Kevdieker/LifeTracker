@@ -23,8 +23,8 @@ import com.kevker.lifetracker.widget.SimpleTopAppBar
 fun WeeklyHydrationScreen(navController: NavController) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(context)
-    val repository = GlassRepository.getInstance(db.glassDao())
-    val viewModel: WeeklyHydrationViewModel = viewModel(factory = ViewModelFactory( context = context,glassRepository = repository))
+    val glassRepository = GlassRepository.getInstance(db.glassDao())
+    val viewModel: WeeklyHydrationViewModel = viewModel(factory = ViewModelFactory(context, glassRepository = glassRepository))
 
     val waterIntakeByDay by viewModel.waterIntakeByDay.collectAsState()
 

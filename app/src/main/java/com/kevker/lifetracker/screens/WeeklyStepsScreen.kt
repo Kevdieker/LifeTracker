@@ -23,8 +23,8 @@ import com.kevker.lifetracker.widget.SimpleTopAppBar
 fun WeeklyStepsScreen(navController: NavController) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(LocalContext.current)
-    val repository = StepRepository.getInstance(db.stepCountDao())
-    val viewModel: WeeklyStepsViewModel = viewModel(factory = ViewModelFactory(context = context, stepRepository = repository))
+    val stepRepository = StepRepository.getInstance(db.stepCountDao())
+    val viewModel: WeeklyStepsViewModel = viewModel(factory = ViewModelFactory(context, stepRepository = stepRepository))
 
     val stepsByDay by viewModel.stepsByDay.collectAsState()
 
