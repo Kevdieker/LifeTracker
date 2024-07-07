@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "sleep_times")
 data class SleepEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
+    val id: Long = 0,
     val startTime: Long,
     val endTime: Long
 )

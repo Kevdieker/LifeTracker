@@ -30,13 +30,17 @@ class SleepViewModel(private val repository: SleepRepository) : ViewModel() {
     private val timeFormatter = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
 
     init {
+        fetchAllSleepTimes()
+    }
+
+    private fun fetchAllSleepTimes() {
         viewModelScope.launch {
             repository.allSleepTimes.collect { sleepEntities ->
                 _sleepTimes.value = sleepEntities.map { it.startTime to it.endTime }
                 _allSleepEntries.value = sleepEntities
                 calculateTodaySleep()
+                calculateYesterdaySleep()
             }
-            calculateYesterdaySleep()
         }
     }
 
@@ -47,18 +51,21 @@ class SleepViewModel(private val repository: SleepRepository) : ViewModel() {
 
             if (_sleepState.value) {
                 // Sleep started
-                _sleepTimes.value = _sleepTimes.value + Pair(currentTime + bufferTime * 60 * 1000, 0L)
+                _sleepTimes.value += Pair(currentTime + bufferTime * 60 * 1000, 0L)
             } else {
                 // Sleep ended
                 val updatedSleepTimes = ArrayList(_sleepTimes.value)
                 val lastIndex = updatedSleepTimes.size - 1
-                updatedSleepTimes[lastIndex] =
-                    updatedSleepTimes[lastIndex].copy(second = currentTime)
+                updatedSleepTimes[lastIndex] = updatedSleepTimes[lastIndex].copy(second = currentTime)
                 _sleepTimes.value = updatedSleepTimes
 
                 // Persist sleep time
-                val sleepEntity = SleepEntity(startTime = updatedSleepTimes[lastIndex].first, endTime = updatedSleepTimes[lastIndex].second)
-                repository.insertSleepTime(sleepEntity)
+                repository.insertSleepTime(
+                    SleepEntity(
+                        startTime = updatedSleepTimes[lastIndex].first,
+                        endTime = updatedSleepTimes[lastIndex].second
+                    )
+                )
 
                 // Update today's and yesterday's sleep duration
                 calculateTodaySleep()
@@ -67,59 +74,46 @@ class SleepViewModel(private val repository: SleepRepository) : ViewModel() {
         }
     }
 
+
     private fun calculateYesterdaySleep() {
         viewModelScope.launch {
-            val calendar = Calendar.getInstance()
-            calendar.add(Calendar.DATE, -1)
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            val yesterdayStart = calendar.timeInMillis
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            calendar.set(Calendar.SECOND, 59)
-            val yesterdayEnd = calendar.timeInMillis
-
-            var totalSleep = 0L
-            for (sleepSession in _sleepTimes.value) {
-                val (start, end) = sleepSession
-                if (start in yesterdayStart..yesterdayEnd && end in yesterdayStart..yesterdayEnd) {
-                    totalSleep += (end - start)
-                } else if (start < yesterdayStart && end > yesterdayStart) {
-                    totalSleep += (end - yesterdayStart)
-                } else if (start < yesterdayEnd && end > yesterdayEnd) {
-                    totalSleep += (yesterdayEnd - start)
-                }
-            }
-            _yesterdaySleepDuration.value = totalSleep
+            val (yesterdayStart, yesterdayEnd) = getStartAndEndOfDay(-1)
+            _yesterdaySleepDuration.value = calculateSleepDuration(yesterdayStart, yesterdayEnd)
         }
     }
 
     private fun calculateTodaySleep() {
         viewModelScope.launch {
-            val calendar = Calendar.getInstance()
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            val todayStart = calendar.timeInMillis
-            calendar.set(Calendar.HOUR_OF_DAY, 23)
-            calendar.set(Calendar.MINUTE, 59)
-            calendar.set(Calendar.SECOND, 59)
-            val todayEnd = calendar.timeInMillis
-
-            var totalSleep = 0L
-            for (sleepSession in _sleepTimes.value) {
-                val (start, end) = sleepSession
-                if (start in todayStart..todayEnd && end in todayStart..todayEnd) {
-                    totalSleep += (end - start)
-                } else if (start < todayStart && end > todayStart) {
-                    totalSleep += (end - todayStart)
-                } else if (start < todayEnd && end > todayEnd) {
-                    totalSleep += (todayEnd - start)
-                }
-            }
-            _todaySleepDuration.value = totalSleep
+            val (todayStart, todayEnd) = getStartAndEndOfDay(0)
+            _todaySleepDuration.value = calculateSleepDuration(todayStart, todayEnd)
         }
+    }
+
+    private fun calculateSleepDuration(start: Long, end: Long): Long {
+        return _sleepTimes.value.sumOf { (sessionStart, sessionEnd) ->
+            when {
+                sessionStart in start..end && sessionEnd in start..end -> sessionEnd - sessionStart
+                sessionStart < start && sessionEnd > start -> sessionEnd - start
+                sessionStart < end && sessionEnd > end -> end - sessionStart
+                else -> 0L
+            }
+        }
+    }
+
+    private fun getStartAndEndOfDay(offsetDays: Int): Pair<Long, Long> {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DATE, offsetDays)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val start = calendar.timeInMillis
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        val end = calendar.timeInMillis
+        return start to end
     }
 
     fun formatTime(millis: Long): String {

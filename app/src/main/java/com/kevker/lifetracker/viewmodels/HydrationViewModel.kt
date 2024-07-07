@@ -16,6 +16,10 @@ class HydrationViewModel(private val repository: GlassRepository) : ViewModel() 
     val dailyGoal: StateFlow<Int> get() = _dailyGoal
 
     init {
+        fetchAllGlasses()
+    }
+
+    private fun fetchAllGlasses() {
         viewModelScope.launch {
             repository.getAllGlasses().collect { glassList ->
                 _glasses.value = glassList
@@ -28,8 +32,7 @@ class HydrationViewModel(private val repository: GlassRepository) : ViewModel() 
 
     fun addGlass(amount: Int) {
         viewModelScope.launch {
-            val newGlass = Glass(amount = amount)
-            repository.add(newGlass)
+            repository.add(Glass(amount = amount))
         }
     }
 
@@ -40,8 +43,6 @@ class HydrationViewModel(private val repository: GlassRepository) : ViewModel() 
     }
 
     fun setDailyGoal(goal: Int) {
-        viewModelScope.launch {
-            _dailyGoal.value = goal
-        }
+        _dailyGoal.value = goal
     }
 }

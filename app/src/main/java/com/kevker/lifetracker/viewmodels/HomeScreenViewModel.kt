@@ -35,7 +35,6 @@ class HomeScreenViewModel(
         fetchTodaySteps()
     }
 
-
     private fun startStepSensor() {
         sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
@@ -46,7 +45,7 @@ class HomeScreenViewModel(
 
     private fun fetchTodaySteps() {
         val startOfDay = getStartOfDayInMillis()
-        val endOfDay = startOfDay + 24 * 60 * 60 * 1000 // 24 hours later
+        val endOfDay = startOfDay + 24 * 60 * 60 * 1000
 
         viewModelScope.launch {
             repository.loadTodaySteps(startOfDay, endOfDay).collect { steps ->
@@ -56,6 +55,7 @@ class HomeScreenViewModel(
             }
         }
     }
+
     private fun getSavedInitialStepCount(): Long {
         val sharedPref = context.getSharedPreferences("step_prefs", Context.MODE_PRIVATE)
         return sharedPref.getLong("initial_step_count", -1)
@@ -87,18 +87,13 @@ class HomeScreenViewModel(
             apply()
         }
     }
+
     private suspend fun storeSteps(incrementalSteps: Long) {
         val stepCount = StepCount(
             steps = incrementalSteps,
             createdAt = System.currentTimeMillis()
         )
         repository.storeSteps(stepCount)
-    }
-
-    private fun fetchLastStoredSteps(): Long {
-        // Implement a method to fetch the last stored steps, it should be the sum of steps stored so far today.
-        // This is a placeholder for the actual implementation.
-        return 0L
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -111,13 +106,15 @@ class HomeScreenViewModel(
     }
 
     private fun getStartOfDayInMillis(): Long {
-        val calendar = Calendar.getInstance()
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        calendar.set(Calendar.MILLISECOND, 0)
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
         return calendar.timeInMillis
     }
+
     private fun saveLastStoredSteps(lastStoredSteps: Long) {
         val sharedPref = context.getSharedPreferences("step_prefs", Context.MODE_PRIVATE)
         with(sharedPref.edit()) {
@@ -131,7 +128,3 @@ class HomeScreenViewModel(
         return sharedPref.getLong("last_stored_steps", 0)
     }
 }
-
-
-
-

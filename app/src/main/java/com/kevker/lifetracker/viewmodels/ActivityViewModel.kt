@@ -22,26 +22,38 @@ class ActivityViewModel(private val context: Context, private val repository: Ac
     val activities: StateFlow<List<Activity>> = _activities.asStateFlow()
 
     init {
+        fetchAllActivities()
+    }
+
+    private fun fetchAllActivities() {
         viewModelScope.launch {
-            repository.getAllActivities().collect { activityList ->
-                _activities.value = activityList
+            try {
+                repository.getAllActivities().collect { activityList ->
+                    _activities.value = activityList
+                }
+            } catch (e: Exception) {
+                // Handle error
             }
         }
     }
 
     fun deleteActivity(activity: Activity) {
         viewModelScope.launch {
-            repository.delete(activity)
-            cancelReminder(activity.activityId)
+            try {
+                repository.delete(activity)
+                cancelReminder(activity.activityId)
+            } catch (e: Exception) {
+                // Handle error
+            }
         }
     }
 
-    suspend fun addActivity(activity: Activity):Long {
-         return repository.add(activity)
+    suspend fun addActivity(activity: Activity): Long {
+        return repository.add(activity)
     }
 
     suspend fun updateActivity(activity: Activity) {
-        return repository.update(activity)
+        repository.update(activity)
     }
 
     fun getActivityById(activityId: Long): StateFlow<Activity?> {
@@ -53,7 +65,7 @@ class ActivityViewModel(private val context: Context, private val repository: Ac
     }
 
     @SuppressLint("ScheduleExactAlarm")
-    private fun scheduleWeeklyReminders(activity: Activity) {
+    fun scheduleWeeklyReminders(activity: Activity) {
         if (!activity.hasReminder || activity.reminderTime == null || activity.reminderDaysOfWeek.isEmpty()) return
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -84,7 +96,7 @@ class ActivityViewModel(private val context: Context, private val repository: Ac
         }
     }
 
-    private fun cancelReminder(activityId: Long) {
+    fun cancelReminder(activityId: Long) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, ActivityReminderReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(

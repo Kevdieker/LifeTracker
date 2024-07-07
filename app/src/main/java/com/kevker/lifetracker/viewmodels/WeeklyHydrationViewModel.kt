@@ -10,11 +10,15 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
-class WeeklyHydrationViewModel(private val context:Context,private val repository: GlassRepository) : ViewModel() {
+class WeeklyHydrationViewModel(private val context: Context, private val repository: GlassRepository) : ViewModel() {
     private val _waterIntakeByDay = MutableStateFlow<Map<String, Int>>(emptyMap())
     val waterIntakeByDay: StateFlow<Map<String, Int>> get() = _waterIntakeByDay
 
     init {
+        fetchWeeklyWaterIntake()
+    }
+
+    private fun fetchWeeklyWaterIntake() {
         viewModelScope.launch {
             repository.getAllGlasses().collect { glassList ->
                 val intakeByDay = glassList.groupBy {
