@@ -18,17 +18,26 @@ import java.util.TimeZone
 
 class AppUsageViewModel(private val context: Context) : ViewModel() {
 
-    private val _topAppUsageTime = MutableStateFlow(0L)
-    val topAppUsageTime: StateFlow<Long> = _topAppUsageTime
+    private val _topAppUsageTimeToday = MutableStateFlow(0L)
+    val topAppUsageTimeToday: StateFlow<Long> = _topAppUsageTimeToday
+
+    private val _topAppIconToday = MutableStateFlow<Drawable?>(null)
+    val topAppIconToday: StateFlow<Drawable?> = _topAppIconToday
+
+    private val _topAppNameToday = MutableStateFlow("")
+    val topAppNameToday: StateFlow<String> = _topAppNameToday
+
+    private val _topAppUsageTimeYesterday = MutableStateFlow(0L)
+    val topAppUsageTimeYesterday: StateFlow<Long> = _topAppUsageTimeYesterday
+
+    private val _topAppIconYesterday = MutableStateFlow<Drawable?>(null)
+    val topAppIconYesterday: StateFlow<Drawable?> = _topAppIconYesterday
+
+    private val _topAppNameYesterday = MutableStateFlow("")
+    val topAppNameYesterday: StateFlow<String> = _topAppNameYesterday
 
     private val _totalScreenTime = MutableStateFlow(0L)
     val totalScreenTime: StateFlow<Long> = _totalScreenTime
-
-    private val _topAppIcon = MutableStateFlow<Drawable?>(null)
-    val topAppIcon: StateFlow<Drawable?> = _topAppIcon
-
-    private val _topAppName = MutableStateFlow("")
-    val topAppName: StateFlow<String> = _topAppName
 
     private val _allAppUsages = MutableStateFlow<Map<String, Long>>(emptyMap())
     val allAppUsages: StateFlow<Map<String, Long>> = _allAppUsages
@@ -61,12 +70,16 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
             }
 
             val endTime = System.currentTimeMillis()
-            val startTime = _trackingStartTime.value
+            val startTimeToday = _trackingStartTime.value
+            val startTimeYesterday = getStartOfYesterday()
 
-            val usageStatsMap: Map<String, UsageStats> =
-                usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
+            val usageStatsMapToday: Map<String, UsageStats> =
+                usageStatsManager.queryAndAggregateUsageStats(startTimeToday, endTime)
 
-            val filteredUsageStatsMap = usageStatsMap
+            val usageStatsMapYesterday: Map<String, UsageStats> =
+                usageStatsManager.queryAndAggregateUsageStats(startTimeYesterday, startTimeToday)
+
+            val filteredUsageStatsMapToday = usageStatsMapToday
                 .filter { it.value.totalTimeInForeground > 0 }
                 .filterNot {
                     it.key.startsWith("com.sec.") ||
@@ -75,37 +88,70 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
                             it.key.startsWith("com.samsung.")
                 }
 
-            val topUsageStat = filteredUsageStatsMap.maxByOrNull { it.value.totalTimeInForeground }
+            val filteredUsageStatsMapYesterday = usageStatsMapYesterday
+                .filter { it.value.totalTimeInForeground > 0 }
+                .filterNot {
+                    it.key.startsWith("com.sec.") ||
+                            it.key.startsWith("com.kevker.lifetracker") ||
+                            it.key.startsWith("android.") ||
+                            it.key.startsWith("com.samsung.")
+                }
 
-            if (topUsageStat != null) {
-                val topPackageName = topUsageStat.key
-                val topUsageTime = topUsageStat.value.totalTimeInForeground
+            val topUsageStatToday = filteredUsageStatsMapToday.maxByOrNull { it.value.totalTimeInForeground }
+            val topUsageStatYesterday = filteredUsageStatsMapYesterday.maxByOrNull { it.value.totalTimeInForeground }
 
-                _topAppUsageTime.value = topUsageTime
+            if (topUsageStatToday != null) {
+                val topPackageNameToday = topUsageStatToday.key
+                val topUsageTimeToday = topUsageStatToday.value.totalTimeInForeground
+
+                _topAppUsageTimeToday.value = topUsageTimeToday
 
                 // Get the application label (actual app name)
                 val packageManager = context.packageManager
                 try {
-                    val appInfo = packageManager.getApplicationInfo(topPackageName, 0)
-                    _topAppIcon.value = packageManager.getApplicationIcon(appInfo)
-                    _topAppName.value = packageManager.getApplicationLabel(appInfo).toString()
+                    val appInfo = packageManager.getApplicationInfo(topPackageNameToday, 0)
+                    _topAppIconToday.value = packageManager.getApplicationIcon(appInfo)
+                    _topAppNameToday.value = packageManager.getApplicationLabel(appInfo).toString()
                 } catch (e: Exception) {
                     Log.e(
                         "AppUsageViewModel",
-                        "Error fetching app icon for package: $topPackageName",
+                        "Error fetching app icon for package: $topPackageNameToday",
                         e
                     )
                 }
             } else {
-                Log.d("AppUsageViewModel", "No app found with non-zero usage time.")
+                Log.d("AppUsageViewModel", "No app found with non-zero usage time for today.")
+            }
+
+            if (topUsageStatYesterday != null) {
+                val topPackageNameYesterday = topUsageStatYesterday.key
+                val topUsageTimeYesterday = topUsageStatYesterday.value.totalTimeInForeground
+
+                _topAppUsageTimeYesterday.value = topUsageTimeYesterday
+
+                // Get the application label (actual app name)
+                val packageManager = context.packageManager
+                try {
+                    val appInfo = packageManager.getApplicationInfo(topPackageNameYesterday, 0)
+                    _topAppIconYesterday.value = packageManager.getApplicationIcon(appInfo)
+                    _topAppNameYesterday.value = packageManager.getApplicationLabel(appInfo).toString()
+                } catch (e: Exception) {
+                    Log.e(
+                        "AppUsageViewModel",
+                        "Error fetching app icon for package: $topPackageNameYesterday",
+                        e
+                    )
+                }
+            } else {
+                Log.d("AppUsageViewModel", "No app found with non-zero usage time for yesterday.")
             }
 
             // Calculate total screen time
-            val totalScreenTime = filteredUsageStatsMap.values.sumOf { it.totalTimeInForeground }
+            val totalScreenTime = filteredUsageStatsMapToday.values.sumOf { it.totalTimeInForeground }
             _totalScreenTime.value = totalScreenTime
 
             // Update all app usages
-            val allAppUsages = filteredUsageStatsMap.mapValues { it.value.totalTimeInForeground }
+            val allAppUsages = filteredUsageStatsMapToday.mapValues { it.value.totalTimeInForeground }
             _allAppUsages.value = allAppUsages
         }
     }
@@ -138,6 +184,17 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
     private fun getDefaultTrackingStartTime(): Long {
         val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 6)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis
+    }
+
+    private fun getStartOfYesterday(): Long {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_MONTH, -1)
+            set(Calendar.HOUR_OF_DAY, 0)
             set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)

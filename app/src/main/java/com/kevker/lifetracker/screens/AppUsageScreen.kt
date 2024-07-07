@@ -31,10 +31,13 @@ fun AppUsageScreen(navController: NavController) {
     val context = LocalContext.current
     val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context = context))
 
-    val topAppUsageTime by viewModel.topAppUsageTime.collectAsState()
     val totalScreenTime by viewModel.totalScreenTime.collectAsState()
-    val topAppIcon by viewModel.topAppIcon.collectAsState()
-    val topAppName by viewModel.topAppName.collectAsState()
+    val topAppUsageTimeToday by viewModel.topAppUsageTimeToday.collectAsState()
+    val topAppIconToday by viewModel.topAppIconToday.collectAsState()
+    val topAppNameToday by viewModel.topAppNameToday.collectAsState()
+    val topAppUsageTimeYesterday by viewModel.topAppUsageTimeYesterday.collectAsState()
+    val topAppIconYesterday by viewModel.topAppIconYesterday.collectAsState()
+    val topAppNameYesterday by viewModel.topAppNameYesterday.collectAsState()
     val screenTimeGoal by viewModel.screenTimeGoal.collectAsState()
     val trackingStartTime by viewModel.trackingStartTime.collectAsState()
 
@@ -87,9 +90,10 @@ fun AppUsageScreen(navController: NavController) {
                     .padding(16.dp)
             ) {
                 TopAppComposable(
-                    usageTime = topAppUsageTime,
-                    AppIcon = topAppIcon,
-                    AppName = topAppName
+                    usageTime = topAppUsageTimeToday,
+                    AppIcon = topAppIconToday,
+                    AppName = topAppNameToday,
+                    title= "Top App Today"
                 )
                 Divider(
                     color = Color.Gray,
@@ -98,9 +102,10 @@ fun AppUsageScreen(navController: NavController) {
                         .width(1.dp)
                 )
                 TopAppComposable(
-                    usageTime = topAppUsageTime,
-                    AppIcon = topAppIcon,
-                    AppName = topAppName
+                    usageTime = topAppUsageTimeYesterday,
+                    AppIcon = topAppIconYesterday,
+                    AppName = topAppNameYesterday,
+                    title= "Top App Yesterday"
                 )
             }
 
@@ -217,6 +222,7 @@ fun TopAppComposable(
     usageTime: Long,
     AppIcon: Drawable?,
     AppName: String,
+    title: String,
 ) {
     val hours = (usageTime / 1000 / 3600).toInt()
     val minutes = ((usageTime / 1000 % 3600) / 60).toInt()
@@ -247,7 +253,7 @@ fun TopAppComposable(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Usage Time",
+                text = title,
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.bodyMedium
             )
