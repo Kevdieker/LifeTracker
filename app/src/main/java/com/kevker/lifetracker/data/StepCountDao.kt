@@ -19,4 +19,9 @@ interface StepCountDao {
     @Transaction
     @Query("SELECT * FROM step")
     fun getAll(): Flow<List<StepCount>>
+
+
+    @Query("SELECT * FROM step WHERE created_at >= :startDateTime AND created_at < :endDateTime")
+    fun loadAllStepsFromPeriod(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>>
+
 }

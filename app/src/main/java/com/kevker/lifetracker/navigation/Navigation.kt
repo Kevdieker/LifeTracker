@@ -20,6 +20,9 @@ fun Navigation(){
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController)
         }
+        composable("weekly_steps") {
+            WeeklyStepsScreen(navController = navController)
+        }
         composable(route = Screen.Sleep.route) {
             SleepScreen(navController = navController)
         }

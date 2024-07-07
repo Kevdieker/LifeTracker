@@ -18,6 +18,9 @@ class ViewModelFactory(
             modelClass.isAssignableFrom(HomeScreenViewModel::class.java) -> {
                 HomeScreenViewModel(context= context!!,repository= stepRepository!!) as T
             }
+            modelClass.isAssignableFrom(WeeklyStepsViewModel::class.java) -> {
+                WeeklyStepsViewModel(context= context!!,repository= stepRepository!!) as T
+            }
             modelClass.isAssignableFrom(ActivityViewModel::class.java) -> {
                 ActivityViewModel(repository = activityRepository!!) as T
             }

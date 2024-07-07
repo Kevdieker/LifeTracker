@@ -13,6 +13,9 @@ class StepRepository(private val stepsDao: StepCountDao) {
     fun loadTodaySteps(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>> {
         return stepsDao.loadAllStepsFromToday(startDateTime, endDateTime)
     }
+    fun loadStepsForPeriod(startDateTime: Long, endDateTime: Long): Flow<List<StepCount>> {
+        return stepsDao.loadAllStepsFromPeriod(startDateTime, endDateTime)
+    }
 
     companion object {
         @Volatile

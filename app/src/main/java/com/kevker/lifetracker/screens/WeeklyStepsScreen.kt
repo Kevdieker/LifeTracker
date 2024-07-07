@@ -1,10 +1,8 @@
 package com.kevker.lifetracker.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,36 +16,32 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.repositories.StepRepository
-import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
-import com.kevker.lifetracker.widget.SimpleBottomAppBar
+import com.kevker.lifetracker.viewmodels.WeeklyStepsViewModel
 import com.kevker.lifetracker.widget.SimpleTopAppBar
 
 @Composable
-fun HomeScreen(navController: NavController) {
+fun WeeklyStepsScreen(navController: NavController) {
     val context = LocalContext.current
     val db = LTDatabase.getDatabase(LocalContext.current)
     val repository = StepRepository.getInstance(db.stepCountDao())
-    val viewModel: HomeScreenViewModel = viewModel(factory = ViewModelFactory(context = context, stepRepository = repository))
+    val viewModel: WeeklyStepsViewModel = viewModel(factory = ViewModelFactory(context = context, stepRepository = repository))
 
-    val stepCount by viewModel.stepCount.collectAsState()
+    val stepsByDay by viewModel.stepsByDay.collectAsState()
 
     Scaffold(
         topBar = {
             SimpleTopAppBar(
-                title = "Home",
-                onNavigationIconClick = null
+                title = "Weekly Steps",
+                onNavigationIconClick = { navController.navigateUp() }
             )
-        },
-        bottomBar = { SimpleBottomAppBar(navController) }
+        }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { navController.navigate("weekly_steps") }
-                    .padding(16.dp)
-            ) {
-                Text(text = "Steps: $stepCount", modifier = Modifier.padding(16.dp))
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)
+            .padding(16.dp)) {
+            stepsByDay.forEach { (day, steps) ->
+                Text(text = "$day: $steps steps", modifier = Modifier.padding(8.dp))
             }
         }
     }
