@@ -99,14 +99,16 @@ class NotificationHandler(private val context: Context) {
 
     @SuppressLint("ScheduleExactAlarm")
     fun scheduleWeeklyReminders(activity: Activity) {
+        if (!activity.hasReminder || activity.reminderTime == null || activity.reminderDaysOfWeek.isEmpty()) return
+
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         activity.reminderDaysOfWeek.forEach { dayOfWeek ->
-            val calendar: Calendar = Calendar.getInstance().apply {
+            val calendar = Calendar.getInstance().apply {
                 timeInMillis = System.currentTimeMillis()
                 set(Calendar.DAY_OF_WEEK, dayOfWeek)
-                set(Calendar.HOUR_OF_DAY, 19)
-                set(Calendar.MINUTE, 12)
+                set(Calendar.HOUR_OF_DAY, Calendar.getInstance().apply { timeInMillis = activity.reminderTime }.get(Calendar.HOUR_OF_DAY))
+                set(Calendar.MINUTE, Calendar.getInstance().apply { timeInMillis = activity.reminderTime }.get(Calendar.MINUTE))
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
 
@@ -119,9 +121,27 @@ class NotificationHandler(private val context: Context) {
                 putExtra("title", activity.title)
                 putExtra("notificationId", activity.activityId.toInt())
             }
-            val pendingIntent = createPendingIntent(intent, activity.activityId.toInt())
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                activity.activityId.toInt(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
 
             setExactAlarm(alarmManager, calendar.timeInMillis, pendingIntent)
+        }
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private fun setExactAlarm(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
         }
     }
 
@@ -150,16 +170,5 @@ class NotificationHandler(private val context: Context) {
         }
     }
 
-    @SuppressLint("ScheduleExactAlarm")
-    private fun setExactAlarm(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAtMillis,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
-        }
-    }
+
 }
