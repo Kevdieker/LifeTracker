@@ -26,10 +26,10 @@ import com.kevker.lifetracker.widget.SimpleTopAppBar
 fun ActivityScreen(
     navController: NavController
 ) {
-
-    val db = LTDatabase.getDatabase(LocalContext.current)
+    val context = LocalContext.current
+    val db = LTDatabase.getDatabase(context)
     val activityRepository = ActivityRepository(activityDao = db.activityDao())
-    val factory = ViewModelFactory(activityRepository = activityRepository)
+    val factory = ViewModelFactory(context = context,activityRepository = activityRepository)
     val viewModel: ActivityViewModel = viewModel(factory = factory)
     val activitiesState by viewModel.activities.collectAsState()
 

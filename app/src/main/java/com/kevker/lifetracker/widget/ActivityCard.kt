@@ -1,26 +1,16 @@
 package com.kevker.lifetracker.widget
 
-
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ShapeDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +22,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kevker.lifetracker.models.Activity
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun ActivityCard(
@@ -44,6 +36,12 @@ fun ActivityCard(
     val rotationState by animateFloatAsState(
         targetValue = if (expandedState) 180f else 0f, label = ""
     )
+    val daysOfWeek = listOf(
+        "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    )
+
+    val dateFormatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     Card(
         modifier = Modifier
@@ -71,11 +69,11 @@ fun ActivityCard(
                 Text(
                     text = activity.title,
                     fontSize = 18.sp,
+                    modifier = Modifier.weight(1f)
                 )
 
                 IconButton(
-                    modifier = Modifier
-                        .rotate(rotationState),
+                    modifier = Modifier.rotate(rotationState),
                     onClick = {
                         expandedState = !expandedState
                     }) {
@@ -93,6 +91,19 @@ fun ActivityCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(text = activity.description)
+                    Text(
+                        text = "Goal Date: ${activity.date?.let { dateFormatter.format(Date(it)) } ?: "No Date"}"
+                    )
+                    Text(
+                        text = "Reminder Time: ${activity.reminderTime?.let { timeFormatter.format(Date(it)) } ?: "No Reminder Time"}"
+                    )
+                    Text(
+                        text = "Reminder Days: ${
+                            activity.reminderDaysOfWeek.joinToString { dayIndex ->
+                                daysOfWeek[dayIndex - 1]
+                            }
+                        }"
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End

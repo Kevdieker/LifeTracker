@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import android.content.Context
+import androidx.room.TypeConverters
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.models.Glass
 import com.kevker.lifetracker.models.SleepEntity
@@ -11,9 +12,11 @@ import com.kevker.lifetracker.models.StepCount
 
 @Database(
     entities = [Activity::class, Glass::class, SleepEntity::class,StepCount::class],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
+
 abstract class LTDatabase : RoomDatabase() {
     abstract fun activityDao(): ActivityDao
     abstract fun glassDao(): GlassDao

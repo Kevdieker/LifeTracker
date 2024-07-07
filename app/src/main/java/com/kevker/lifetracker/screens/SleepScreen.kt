@@ -1,6 +1,7 @@
 package com.kevker.lifetracker.screens
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -63,6 +64,8 @@ fun SleepScreen(
     var showAllEntries by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
 
+
+
     val colors = listOf(Color.Red, Color.Green, Color.Blue, Color.Yellow, Color.Cyan, Color.Magenta)
     val infiniteTransition = rememberInfiniteTransition()
     val animatedColor by infiniteTransition.animateColor(
@@ -87,7 +90,7 @@ fun SleepScreen(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
+            notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!",0)
         } else {
             // Optionally handle the case where permission is denied
         }
@@ -113,7 +116,7 @@ fun SleepScreen(
         }
         alarmTime.value = timeString
         isAlarmSet.value = true
-        setDailySleepNotification(context, hour, minute)
+        notificationHandler.setDailySleepNotification(context, hour, minute)
     }
 
     val cancelReminder: () -> Unit = {
@@ -124,7 +127,7 @@ fun SleepScreen(
         }
         alarmTime.value = ""
         isAlarmSet.value = false
-        cancelDailySleepNotification(context)
+        notificationHandler.cancelDailySleepNotification(context)
     }
 
     Scaffold(
@@ -154,7 +157,7 @@ fun SleepScreen(
                     if (context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
                         == PackageManager.PERMISSION_GRANTED
                     ) {
-                        notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!")
+                        notificationHandler.sendNotification("Go to sleep!", "Sleepy time!!",0)
                     } else {
                         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
@@ -262,58 +265,8 @@ fun SleepScreen(
     }
 }
 
-// Function to set the alarm
-fun setDailySleepNotification(context: Context, hour: Int, minute: Int) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    val intent = Intent(context, SleepAlarmReceiver::class.java)
-    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        PendingIntent.getBroadcast(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-    } else {
-        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-
-    val calendar: Calendar = Calendar.getInstance().apply {
-        timeInMillis = System.currentTimeMillis()
-        set(Calendar.HOUR_OF_DAY, hour)
-        set(Calendar.MINUTE, minute)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-
-    if (calendar.timeInMillis <= System.currentTimeMillis()) {
-        calendar.add(Calendar.DAY_OF_MONTH, 1)
-    }
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-    } else {
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-    }
-}
 
 
-
-// Function to cancel the alarm
-fun cancelDailySleepNotification(context: Context) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    val intent = Intent(context, SleepAlarmReceiver::class.java)
-    val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        PendingIntent.getBroadcast(
-            context,
-            0,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-    } else {
-        PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-    }
-    alarmManager.cancel(pendingIntent)
-}
 
 
 

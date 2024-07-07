@@ -22,7 +22,7 @@ class ViewModelFactory(
                 WeeklyStepsViewModel(context= context!!,repository= stepRepository!!) as T
             }
             modelClass.isAssignableFrom(ActivityViewModel::class.java) -> {
-                ActivityViewModel(repository = activityRepository!!) as T
+                ActivityViewModel(context= context!!,repository = activityRepository!!) as T
             }
             modelClass.isAssignableFrom(AppUsageViewModel::class.java) -> {
                 AppUsageViewModel(context = context!!) as T

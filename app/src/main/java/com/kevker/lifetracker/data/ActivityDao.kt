@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface ActivityDao {
 
     @Insert
-    suspend fun add(activity: Activity)
+    suspend fun add(activity: Activity):Long
 
     @Update
     suspend fun update(activity: Activity)

@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
             permissions.forEach { (permission, isGranted) ->
                 when (permission) {
-                    Manifest.permission.ACTIVITY_RECOGNITION -> {
+                    Manifest.permission.ACTIVITY_RECOGNITION, Manifest.permission.POST_NOTIFICATIONS -> {
                         if (isGranted) {
                             // Permission granted, proceed with step tracking
                         } else {
@@ -42,9 +42,10 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Check and request ACTIVITY_RECOGNITION permission at runtime for Android 10 and above
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissionsLauncher.launch(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION))
+        // Check and request necessary permissions at runtime for Android 10 and above
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACTIVITY_RECOGNITION) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionsLauncher.launch(arrayOf(Manifest.permission.ACTIVITY_RECOGNITION, Manifest.permission.POST_NOTIFICATIONS))
         }
 
         setContent {
