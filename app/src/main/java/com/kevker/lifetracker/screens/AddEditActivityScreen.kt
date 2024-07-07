@@ -1,14 +1,7 @@
 package com.kevker.lifetracker.screens
 
-import android.annotation.SuppressLint
-import android.app.AlarmManager
 import android.app.DatePickerDialog
-import android.app.PendingIntent
 import android.app.TimePickerDialog
-import android.content.Context
-import android.content.Intent
-import android.os.Build
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -23,7 +16,6 @@ import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.enums.Category
 import com.kevker.lifetracker.factories.ViewModelFactory
-import com.kevker.lifetracker.handlers.ActivityReminderReceiver
 import com.kevker.lifetracker.handlers.NotificationHandler
 import com.kevker.lifetracker.models.Activity
 import com.kevker.lifetracker.repositories.ActivityRepository
@@ -278,7 +270,7 @@ fun AddEditActivityScreen(
                                 )
                                 val activityId = viewModel.addActivity(newActivity)
                                 if (hasReminder) {
-                                    notificationHandler.scheduleWeeklyReminders(context, newActivity.copy(activityId = activityId))
+                                    notificationHandler.scheduleWeeklyReminders(newActivity.copy(activityId = activityId))
                                 }
                             } else {
                                 activity?.let {
@@ -293,9 +285,9 @@ fun AddEditActivityScreen(
                                     )
                                     viewModel.updateActivity(updatedActivity)
                                     if (hasReminder) {
-                                        notificationHandler.scheduleWeeklyReminders(context, updatedActivity)
+                                        notificationHandler.scheduleWeeklyReminders(updatedActivity)
                                     } else {
-                                        notificationHandler.cancelReminder(context, it.activityId)
+                                        notificationHandler.cancelReminder(it.activityId)
                                     }
                                 }
                             }

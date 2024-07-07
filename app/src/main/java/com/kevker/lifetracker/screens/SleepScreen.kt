@@ -1,13 +1,8 @@
 package com.kevker.lifetracker.screens
 
 import android.Manifest
-import android.annotation.SuppressLint
-import android.app.AlarmManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateColor
@@ -31,14 +26,12 @@ import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.repositories.SleepRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.handlers.NotificationHandler
-import com.kevker.lifetracker.handlers.SleepAlarmReceiver
 import com.kevker.lifetracker.viewmodels.SleepViewModel
 import com.kevker.lifetracker.widget.SetSleepTimeDialog
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.delay
-import java.util.Calendar
 
 @Composable
 fun SleepScreen(
@@ -116,7 +109,7 @@ fun SleepScreen(
         }
         alarmTime.value = timeString
         isAlarmSet.value = true
-        notificationHandler.setDailySleepNotification(context, hour, minute)
+        notificationHandler.setDailySleepNotification( hour, minute)
     }
 
     val cancelReminder: () -> Unit = {
@@ -127,7 +120,7 @@ fun SleepScreen(
         }
         alarmTime.value = ""
         isAlarmSet.value = false
-        notificationHandler.cancelDailySleepNotification(context)
+        notificationHandler.cancelDailySleepNotification()
     }
 
     Scaffold(

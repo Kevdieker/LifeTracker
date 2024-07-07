@@ -15,12 +15,19 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.kevker.lifetracker.R
 import com.kevker.lifetracker.models.Activity
+import com.kevker.lifetracker.notificationreceivers.ActivityReminderReceiver
+import com.kevker.lifetracker.notificationreceivers.SleepAlarmReceiver
 import java.util.Calendar
+import android.util.Log
 
 class NotificationHandler(private val context: Context) {
-    private val channelId = "goal_notifications"
-    private val channelName = "Goal Notifications"
-    private val channelDescription = "Notifications for goal achievements"
+
+    companion object {
+        private const val CHANNEL_ID = "goal_notifications"
+        private const val CHANNEL_NAME = "Goal Notifications"
+        private const val CHANNEL_DESCRIPTION = "Notifications for goal achievements"
+        private const val NOTIFICATION_ID = 1000
+    }
 
     init {
         createNotificationChannel()
@@ -29,8 +36,8 @@ class NotificationHandler(private val context: Context) {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel(channelId, channelName, importance).apply {
-                description = channelDescription
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance).apply {
+                description = CHANNEL_DESCRIPTION
             }
 
             val notificationManager =
@@ -39,8 +46,17 @@ class NotificationHandler(private val context: Context) {
         }
     }
 
-    fun sendNotification(title: String, message: String, notifyId:Int) {
-        val notification = NotificationCompat.Builder(context, channelId)
+    fun sendNotification(title: String, message: String, notifyId: Int) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w("NotificationHandler", "No permission to send notification")
+            return
+        }
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(message)
@@ -48,33 +64,16 @@ class NotificationHandler(private val context: Context) {
             .build()
 
         with(NotificationManagerCompat.from(context)) {
-            if (ActivityCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                println("no permission to send notification")
-                return
-            }
-            println("notification gets send with "+notifyId)
+            Log.d("NotificationHandler", "Notification gets sent with ID: $notifyId")
             notify(notifyId, notification)
         }
     }
 
     @SuppressLint("ScheduleExactAlarm")
-    fun setDailySleepNotification(context: Context, hour: Int, minute: Int) {
+    fun setDailySleepNotification(hour: Int, minute: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, SleepAlarmReceiver::class.java)
-        val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.getBroadcast(
-                context,
-                1000,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        } else {
-            PendingIntent.getBroadcast(context, 1000, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
+        val pendingIntent = createPendingIntent(intent, NOTIFICATION_ID)
 
         val calendar: Calendar = Calendar.getInstance().apply {
             timeInMillis = System.currentTimeMillis()
@@ -88,95 +87,79 @@ class NotificationHandler(private val context: Context) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                calendar.timeInMillis,
-                pendingIntent
-            )
-        } else {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-        }
+        setExactAlarm(alarmManager, calendar.timeInMillis, pendingIntent)
     }
 
-    // Function to cancel the alarm
-    fun cancelDailySleepNotification(context: Context) {
+    fun cancelDailySleepNotification() {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, SleepAlarmReceiver::class.java)
-        val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            PendingIntent.getBroadcast(
-                context,
-                1000,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-        } else {
-            PendingIntent.getBroadcast(context, 1000, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
+        val pendingIntent = createPendingIntent(intent, NOTIFICATION_ID)
         alarmManager.cancel(pendingIntent)
     }
 
-
     @SuppressLint("ScheduleExactAlarm")
-    fun scheduleWeeklyReminders(context: Context, activity: Activity) {
-        println("warum kommst du nicht her")
+    fun scheduleWeeklyReminders(activity: Activity) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        val calendar: Calendar = Calendar.getInstance().apply {
-            timeInMillis = System.currentTimeMillis()
-            set(Calendar.HOUR_OF_DAY, 15)
-            set(Calendar.MINUTE, 40)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-        /*
         activity.reminderDaysOfWeek.forEach { dayOfWeek ->
-            val calendar = Calendar.getInstance().apply {
+            val calendar: Calendar = Calendar.getInstance().apply {
+                timeInMillis = System.currentTimeMillis()
                 set(Calendar.DAY_OF_WEEK, dayOfWeek)
-                set(Calendar.HOUR_OF_DAY, Calendar.getInstance().get(Calendar.HOUR_OF_DAY))
-                set(Calendar.MINUTE, Calendar.getInstance().get(Calendar.MINUTE))
+                set(Calendar.HOUR_OF_DAY, 19)
+                set(Calendar.MINUTE, 12)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
+
                 if (timeInMillis <= System.currentTimeMillis()) {
                     add(Calendar.WEEK_OF_YEAR, 1)
                 }
             }
 
-         */
-        println("tahts the id"+ activity.activityId)
-
             val intent = Intent(context, ActivityReminderReceiver::class.java).apply {
                 putExtra("title", activity.title)
                 putExtra("notificationId", activity.activityId.toInt())
             }
-            val pendingIntent = PendingIntent.getBroadcast(
+            val pendingIntent = createPendingIntent(intent, activity.activityId.toInt())
+
+            setExactAlarm(alarmManager, calendar.timeInMillis, pendingIntent)
+        }
+    }
+
+    fun cancelReminder(activityId: Long) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, ActivityReminderReceiver::class.java)
+        val pendingIntent = createPendingIntent(intent, activityId.toInt())
+        alarmManager.cancel(pendingIntent)
+    }
+
+    private fun createPendingIntent(intent: Intent, requestCode: Int): PendingIntent {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.getBroadcast(
                 context,
-                activity.activityId.toInt(),
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                alarmManager.setExactAndAllowWhileIdle(
-                    AlarmManager.RTC_WAKEUP,
-                    calendar.timeInMillis,
-                    pendingIntent
-                )
-            } else {
-                alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-            }
+        } else {
+            PendingIntent.getBroadcast(
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+            )
         }
+    }
 
-
-    fun cancelReminder(context: Context, activityId: Long) {
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = Intent(context, ActivityReminderReceiver::class.java)
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            activityId.toInt(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        alarmManager.cancel(pendingIntent)
+    @SuppressLint("ScheduleExactAlarm")
+    private fun setExactAlarm(alarmManager: AlarmManager, triggerAtMillis: Long, pendingIntent: PendingIntent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerAtMillis,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent)
+        }
     }
 }

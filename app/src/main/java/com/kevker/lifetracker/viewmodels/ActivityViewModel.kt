@@ -7,7 +7,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kevker.lifetracker.handlers.ActivityReminderReceiver
+import com.kevker.lifetracker.notificationreceivers.ActivityReminderReceiver
 import com.kevker.lifetracker.repositories.ActivityRepository
 import com.kevker.lifetracker.models.Activity
 import kotlinx.coroutines.flow.MutableStateFlow

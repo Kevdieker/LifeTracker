@@ -39,10 +39,10 @@
         </activity>
 
         <receiver
-            android:name=".handlers.SleepAlarmReceiver"
+            android:name=".notificationreceivers.SleepAlarmReceiver"
             android:exported="false"/>
         <receiver
-            android:name=".handlers.ActivityReminderReceiver"
+            android:name=".notificationreceivers.ActivityReminderReceiver"
             android:exported="false"/>
     </application>
 </manifest>
