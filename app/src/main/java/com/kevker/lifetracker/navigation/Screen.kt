@@ -37,6 +37,12 @@ sealed class Screen(
         selectedIcon = Icons.Filled.Place,
         unselectedIcon = Icons.Outlined.Place
     )
+    object AllAppUsage : Screen(
+        route = "all-app-usage-screen",
+        title = "All App Usage",
+        selectedIcon = Icons.Filled.Place,
+        unselectedIcon = Icons.Outlined.Place
+    )
     object Activity : Screen(
         route = "activity-screen",
         title = "Activity",

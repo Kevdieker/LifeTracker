@@ -4,7 +4,6 @@ import android.app.usage.UsageStats
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.content.Intent
-import java.util.TimeZone
 import android.content.SharedPreferences
 import android.graphics.drawable.Drawable
 import android.provider.Settings
@@ -15,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.TimeZone
 
 class AppUsageViewModel(private val context: Context) : ViewModel() {
 
@@ -29,6 +29,9 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
 
     private val _topAppName = MutableStateFlow("")
     val topAppName: StateFlow<String> = _topAppName
+
+    private val _allAppUsages = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val allAppUsages: StateFlow<Map<String, Long>> = _allAppUsages
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("AppUsagePrefs", Context.MODE_PRIVATE)
@@ -100,6 +103,10 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
             // Calculate total screen time
             val totalScreenTime = filteredUsageStatsMap.values.sumOf { it.totalTimeInForeground }
             _totalScreenTime.value = totalScreenTime
+
+            // Update all app usages
+            val allAppUsages = filteredUsageStatsMap.mapValues { it.value.totalTimeInForeground }
+            _allAppUsages.value = allAppUsages
         }
     }
 
@@ -127,8 +134,6 @@ class AppUsageViewModel(private val context: Context) : ViewModel() {
         sharedPreferences.edit().putLong("trackingStartTime", newStartTime).apply()
         fetchUsageStats()
     }
-
-
 
     private fun getDefaultTrackingStartTime(): Long {
         val calendar = Calendar.getInstance().apply {

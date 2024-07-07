@@ -19,6 +19,7 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.factories.ViewModelFactory
+import com.kevker.lifetracker.navigation.Screen
 import com.kevker.lifetracker.viewmodels.AppUsageViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
 import com.kevker.lifetracker.widget.SimpleTopAppBar
@@ -27,7 +28,9 @@ import java.util.*
 
 @Composable
 fun AppUsageScreen(navController: NavController) {
-    val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context = LocalContext.current))
+    val context = LocalContext.current
+    val viewModel: AppUsageViewModel = viewModel(factory = ViewModelFactory(context = context))
+
     val topAppUsageTime by viewModel.topAppUsageTime.collectAsState()
     val totalScreenTime by viewModel.totalScreenTime.collectAsState()
     val topAppIcon by viewModel.topAppIcon.collectAsState()
@@ -60,10 +63,9 @@ fun AppUsageScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize(), // Make the column fill the entire screen
-            verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.Top), // Spaced items
-            horizontalAlignment = Alignment.CenterHorizontally // Center the contents horizontally
-
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(18.dp, Alignment.Top),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 modifier = Modifier.align(Alignment.Start),
@@ -78,14 +80,11 @@ fun AppUsageScreen(navController: NavController) {
             )
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(
-                    16.dp,
-                    Alignment.CenterHorizontally
-                ), // Adjust spacing as needed
+                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp) // Adjust the padding as needed
+                    .padding(16.dp)
             ) {
                 TopAppComposable(
                     usageTime = topAppUsageTime,
@@ -95,8 +94,8 @@ fun AppUsageScreen(navController: NavController) {
                 Divider(
                     color = Color.Gray,
                     modifier = Modifier
-                        .height(120.dp)  // Adjust the height as needed
-                        .width(1.dp)    // This width creates a vertical line
+                        .height(120.dp)
+                        .width(1.dp)
                 )
                 TopAppComposable(
                     usageTime = topAppUsageTime,
@@ -109,6 +108,12 @@ fun AppUsageScreen(navController: NavController) {
                 totalScreenTime = totalScreenTime,
                 screenTimeGoal = screenTimeGoal,
             )
+
+            Button(onClick = {
+                navController.navigate(Screen.AllAppUsage.route)
+            }) {
+                Text(text = "View All App Usage")
+            }
         }
     }
 

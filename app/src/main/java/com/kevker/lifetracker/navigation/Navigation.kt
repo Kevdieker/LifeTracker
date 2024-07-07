@@ -32,6 +32,9 @@ fun Navigation(){
         composable(route = Screen.AppUsage.route) {
             AppUsageScreen(navController = navController)
         }
+        composable(route = Screen.AllAppUsage.route) {
+            AllAppUsageScreen(navController = navController)
+        }
         composable(route = Screen.AddEditActivity.route) {
             AddEditActivityScreen(navController = navController)
         }
