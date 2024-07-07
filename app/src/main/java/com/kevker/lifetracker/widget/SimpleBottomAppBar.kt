@@ -47,10 +47,12 @@ fun RowScope.AddItem(
     NavigationBarItem(
         label = { Text(text = screen.title) },
         icon = {
-            Icon(
-                imageVector = if (isSelected) screen.selectedIcon else screen.unselectedIcon,
-                contentDescription = "${screen.title} Navigation Icon"
-            )
+            (if (isSelected) screen.selectedIcon else screen.unselectedIcon)?.let {
+                Icon(
+                    imageVector = it,
+                    contentDescription = "${screen.title} Navigation Icon"
+                )
+            }
         },
         selected = isSelected,
         onClick = {

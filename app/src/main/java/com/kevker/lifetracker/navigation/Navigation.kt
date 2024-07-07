@@ -1,16 +1,15 @@
 package com.kevker.lifetracker.navigation
 
-import com.kevker.lifetracker.screens.*
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.kevker.lifetracker.viewmodels.ActivityViewModel
+import com.kevker.lifetracker.screens.*
 
 @Composable
-fun Navigation(){
+fun Navigation() {
     val navController = rememberNavController()
 
     NavHost(
@@ -20,10 +19,10 @@ fun Navigation(){
         composable(route = Screen.Home.route) {
             HomeScreen(navController = navController)
         }
-        composable("weekly_steps") {
+        composable(route = Screen.WeeklySteps.route) {
             WeeklyStepsScreen(navController = navController)
         }
-        composable("weekly_hydration") {
+        composable(route = Screen.WeeklyHydration.route) {
             WeeklyHydrationScreen(navController = navController)
         }
         composable(route = Screen.Sleep.route) {

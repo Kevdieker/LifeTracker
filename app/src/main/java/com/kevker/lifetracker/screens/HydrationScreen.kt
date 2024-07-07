@@ -19,6 +19,7 @@ import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.repositories.GlassRepository
 import com.kevker.lifetracker.factories.ViewModelFactory
 import com.kevker.lifetracker.models.Glass
+import com.kevker.lifetracker.navigation.Screen
 
 import com.kevker.lifetracker.viewmodels.HydrationViewModel
 import com.kevker.lifetracker.widget.GlassList
@@ -55,7 +56,7 @@ fun HydrationScreen(navController: NavController) {
         bottomBar = { SimpleBottomAppBar(navController) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                navController.navigate("weekly_hydration")
+                navController.navigate(Screen.WeeklyHydration.route)
             }) {
                 Icon(Icons.Filled.Search, contentDescription = "Weekly Hydration")
             }

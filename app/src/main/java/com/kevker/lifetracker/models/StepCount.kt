@@ -10,4 +10,3 @@ data class StepCount(
     @ColumnInfo(name = "steps") val steps: Long,
     @ColumnInfo(name = "created_at") val createdAt: Long
 )
-

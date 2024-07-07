@@ -13,26 +13,9 @@ data class Activity(
     val activityId: Long = 0,
     val title: String,
     val description: String,
-    val date: Long? = null,  // Store date as timestamp
+    val date: Long? = null,
     val hasReminder: Boolean = false,
-    val reminderTime: Long? = null,  // Store time as timestamp
-    val reminderDaysOfWeek: List<Int> = emptyList(),  // Store days of the week as a list of integers
+    val reminderTime: Long? = null,
+    val reminderDaysOfWeek: List<Int> = emptyList(),
     val category: Category? = null
 )
-
-fun getActivities(): List<Activity> {
-    return listOf(
-        Activity(
-            title = "Running",
-            description = "Go for a run in the park",
-        ),
-        Activity(
-            title = "Reading",
-            description = "Read a new book"
-        ),
-        Activity(
-            title = "Cooking",
-            description = "Try out a new recipe"
-        )
-    )
-}

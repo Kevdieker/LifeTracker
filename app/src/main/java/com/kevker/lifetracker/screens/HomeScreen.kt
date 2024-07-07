@@ -22,6 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.kevker.lifetracker.data.LTDatabase
 import com.kevker.lifetracker.factories.ViewModelFactory
+import com.kevker.lifetracker.navigation.Screen
 import com.kevker.lifetracker.repositories.StepRepository
 import com.kevker.lifetracker.viewmodels.HomeScreenViewModel
 import com.kevker.lifetracker.widget.SimpleBottomAppBar
@@ -62,7 +63,7 @@ fun HomeScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { navController.navigate("weekly_steps") }
+                    .clickable { navController.navigate(Screen.WeeklySteps.route) }
                     .padding(16.dp)
             ) {
                 Text(text = "Steps: $stepCount", modifier = Modifier.padding(16.dp))
